@@ -108,10 +108,10 @@ scp "%USERPROFILE%\.ssh\hearth_github_production.pub" root@YOUR_HOST:/root/heart
 In your **existing Ubuntu root terminal on the VPS**, register that public key with the installer you already downloaded. Rerunning it preserves the existing production configuration:
 
 ```sh
-bash /root/hearth-setup.sh groceries.gempkahub.com "$(cat /root/hearth_github_production.pub)"
+bash /root/hearth-setup.sh groceries.gempkahub.com "$(tr -d '\r' < /root/hearth_github_production.pub)"
 ```
 
-The installer prints a server host-key fingerprint and public `known_hosts` line. Verify that fingerprint through the Hetzner console and save the matching public line for GitHub's `SSH_KNOWN_HOSTS` secret. Use its host string for `SSH_HOST`.
+The command removes Windows carriage returns from the uploaded public key before registering it. The installer prints a server host-key fingerprint and public `known_hosts` line. Verify that fingerprint through the Hetzner console and save the matching public line for GitHub's `SSH_KNOWN_HOSTS` secret. Use its host string for `SSH_HOST`.
 
 Back in **Command Prompt on your laptop**, verify that the key opens a password-free deployment session:
 

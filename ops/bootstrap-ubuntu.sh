@@ -10,6 +10,9 @@ if [[ ${1:-} == --check-key ]]; then check_only=true; shift; fi
 [[ "$check_only" != true || $# -eq 2 ]] || die '--check-key requires a public-key argument.'
 domain=${1,,}
 public_key=${2:-}
+# Windows public-key files end in CRLF. Command substitution removes LF;
+# accept the remaining terminal CR while still rejecting multiline keys.
+public_key=${public_key%$'\r'}
 domain_pattern='^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]([a-z0-9-]{0,61}[a-z0-9])?$'
 [[ ${#domain} -le 253 && "$domain" =~ $domain_pattern ]] || die 'Use a bare domain without a scheme, path, or port.'
 if [[ $# -eq 2 ]]; then
