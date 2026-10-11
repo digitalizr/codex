@@ -4,7 +4,7 @@ Develop and test on your laptop, merge changes into GitHub, then press **Run wor
 
 Your **Hetzner CAX11 runs Ubuntu 26.04.1 LTS on ARM64**. The installation commands below use Ubuntu's signed package repositories and also apply to Ubuntu 24.04 ARM64. They assume a working administrator login. Replace `YOUR_HOST` with the server IP or SSH hostname throughout. These are setup instructions, not a claim that the server has already been configured or deployed.
 
-The laptop commands below use Bash: macOS/Linux Terminal or Git Bash/WSL on Windows. On Windows, install [Git for Windows](https://git-scm.com/downloads/win) and open **Git Bash** from the Start menu for these commands. If you use WSL instead, enable its integration in Docker Desktop. Do not paste these multiline backslashes and heredocs into Windows Command Prompt or PowerShell. Server commands run in the Ubuntu shell after you connect.
+Windows users can complete [deployment key setup in Command Prompt](#windows-command-prompt). Other multiline laptop examples use Bash: macOS/Linux Terminal or Git Bash/WSL on Windows. For those examples, open **Git Bash** from [Git for Windows](https://git-scm.com/downloads/win), or enable WSL integration in Docker Desktop. Do not paste Bash backslashes or heredocs into Command Prompt or PowerShell. Server commands run in the Ubuntu shell after you connect.
 
 ## Develop locally
 
@@ -85,6 +85,50 @@ Membership in the Docker group grants administrative power over the host; store 
 
 ### Add and verify the deployment SSH key
 
+#### Windows Command Prompt
+
+In **Command Prompt on your laptop**, ensure the SSH folder exists:
+
+```bat
+if not exist "%USERPROFILE%\.ssh" mkdir "%USERPROFILE%\.ssh"
+```
+
+Run this command on its own. At **Enter passphrase**, press Enter; at **Enter same passphrase again**, press Enter again. Wait until the normal Command Prompt returns before running another command. If the key already exists and it asks to overwrite it, answer **`n`** and stop; reuse the dedicated key or choose another filename.
+
+```bat
+ssh-keygen -t ed25519 -C hearth-github-production -f "%USERPROFILE%\.ssh\hearth_github_production"
+```
+
+Upload only the **public** `.pub` file, using the same `YOUR_HOST` as your existing, verified root SSH connection. Run this in **Command Prompt on your laptop** and complete any root login prompt:
+
+```bat
+scp "%USERPROFILE%\.ssh\hearth_github_production.pub" root@YOUR_HOST:/root/hearth_github_production.pub
+```
+
+In your **existing Ubuntu root terminal on the VPS**, register that public key with the installer you already downloaded. Rerunning it preserves the existing production configuration:
+
+```sh
+bash /root/hearth-setup.sh groceries.gempkahub.com "$(cat /root/hearth_github_production.pub)"
+```
+
+The installer prints a server host-key fingerprint and public `known_hosts` line. Verify that fingerprint through the Hetzner console and save the matching public line for GitHub's `SSH_KNOWN_HOSTS` secret. Use its host string for `SSH_HOST`.
+
+Back in **Command Prompt on your laptop**, verify that the key opens a password-free deployment session:
+
+```bat
+ssh -i "%USERPROFILE%\.ssh\hearth_github_production" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes deploy@YOUR_HOST "docker --version; docker compose version"
+```
+
+This should print both Docker versions. When filling the `SSH_PRIVATE_KEY` secret in GitHub, copy the private key directly to your clipboard with this **Command Prompt** command:
+
+```bat
+clip < "%USERPROFILE%\.ssh\hearth_github_production"
+```
+
+Paste it only into GitHub's encrypted `SSH_PRIVATE_KEY` secret form. Never send the private key through chat or commit it. Continue with [production configuration](#configure-production) and [GitHub setup](#configure-github-once).
+
+#### macOS, Linux, or Git Bash
+
 On your laptop, create a dedicated, unencrypted key for GitHub Actions:
 
 ```sh
@@ -154,12 +198,12 @@ In the Hetzner Cloud firewall, allow inbound SSH on your chosen port. Restrict i
 
 Open **Repository settings → Secrets and variables → Actions**. Add these **repository secrets**, entering their values directly in GitHub's secure forms:
 
-| Secret            | Value                                                                   |
-| ----------------- | ----------------------------------------------------------------------- |
-| `SSH_HOST`        | Server IP or SSH hostname, matching the verified known-hosts entry.     |
-| `SSH_USER`        | `deploy`.                                                               |
-| `SSH_PRIVATE_KEY` | Complete dedicated private key file from your laptop.                   |
-| `SSH_KNOWN_HOSTS` | Complete contents of the verified `hearth_production_known_hosts` file. |
+| Secret            | Value                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `SSH_HOST`        | Server IP or SSH hostname, matching the verified known-hosts entry.                                                             |
+| `SSH_USER`        | `deploy`.                                                                                                                       |
+| `SSH_PRIVATE_KEY` | Complete dedicated private key file from your laptop.                                                                           |
+| `SSH_KNOWN_HOSTS` | Verified public `known_hosts` line from the bootstrap output, or contents of the verified `hearth_production_known_hosts` file. |
 
 Optionally add the repository **variable** `SSH_PORT` if SSH uses another port; the default is `22`. Do not reuse your personal administrator key. This default setup works with a private repository on GitHub Free: the workflow can release only from `main`, runs only when manually dispatched, and serializes production releases.
 
