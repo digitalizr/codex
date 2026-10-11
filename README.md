@@ -14,6 +14,12 @@ Open **http://localhost:3000**. Docker builds the app and creates its dedicated 
 
 See [the Docker installation guide](docs/docker.md) for stopping/restarting, backups, updates, port changes, and sharing with your partner on home Wi-Fi.
 
+## Release to a Hetzner VPS
+
+Use your laptop as the development environment and a Hetzner CAX11 as production. GitHub validates changes automatically; **Actions → Release Hearth → Run workflow** builds the selected commit for ARM64 and deploys it over SSH. Production has its own persistent database, a backup before each update, and health checks with an attempt to restore the previous app if startup fails.
+
+Follow [the production setup guide](docs/production.md) once to configure Ubuntu, the deployment SSH key, and GitHub's encrypted repository secrets. Access can stay private through SSH or use a Cloudflare DNS subdomain with Caddy HTTPS and one shared household password.
+
 ## Run it without Docker
 
 Requires **Node.js 24 or newer** and npm.

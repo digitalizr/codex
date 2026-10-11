@@ -1,0 +1,139 @@
+name: Release Hearth
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Full commit SHA tested locally (blank uses this version of main)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hearth-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select the tested version
+        id: version
+        env:
+          REQUESTED_COMMIT: ${{ inputs.commit }}
+          WORKFLOW_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          commit="${REQUESTED_COMMIT:-$WORKFLOW_COMMIT}"
+          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'Enter the full, lowercase 40-character commit SHA.' >&2
+            exit 1
+          fi
+          git cat-file -e "$commit^{commit}"
+          git merge-base --is-ancestor "$commit" "$WORKFLOW_COMMIT"
+          git checkout --detach "$commit"
+          test -f ops/deploy.sh
+          test -f ops/compose.production.yaml
+          test -f ops/Caddyfile
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "image=hearth:$commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Validate the selected version
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+          bash -n ops/deploy.sh
+
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the ARM64 production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          tags: ${{ steps.version.outputs.image }}
+          outputs: type=docker,dest=${{ runner.temp }}/hearth-image.tar
+          cache-from: type=gha,scope=hearth-arm64
+          cache-to: type=gha,mode=max,scope=hearth-arm64
+
+      - name: Package the release
+        env:
+          RELEASE_DIR: ${{ runner.temp }}/hearth-release
+          IMAGE_FILE: ${{ runner.temp }}/hearth-image.tar
+        run: |
+          set -euo pipefail
+          mkdir -p "$RELEASE_DIR"
+          gzip -c "$IMAGE_FILE" > "$RELEASE_DIR/image.tar.gz"
+          cp ops/deploy.sh ops/compose.production.yaml ops/Caddyfile "$RELEASE_DIR/"
+          cd "$RELEASE_DIR"
+          sha256sum image.tar.gz compose.production.yaml Caddyfile deploy.sh > SHA256SUMS
+
+      - name: Transfer and deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+          IMAGE: ${{ steps.version.outputs.image }}
+          RELEASE_DIR: ${{ runner.temp }}/hearth-release
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          for name in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing production environment secret: $name" >&2
+              exit 1
+            fi
+          done
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.:-]*$ ]]
+          [[ "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]]
+          (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 ))
+          ssh_dir="$(mktemp -d)"
+          trap 'rm -rf "$ssh_dir"' EXIT
+          chmod 700 "$ssh_dir"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          chmod 600 "$ssh_dir/key" "$ssh_dir/known_hosts"
+          options=(-i "$ssh_dir/key" -o IdentitiesOnly=yes -o BatchMode=yes
+            -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts"
+            -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          destination="$SSH_USER@$SSH_HOST"
+          scp_destination="$destination"
+          if [[ "$SSH_HOST" == *:* ]]; then
+            scp_destination="$SSH_USER@[$SSH_HOST]"
+          fi
+          stage="hearth-releases/$RUN_ID-$RUN_ATTEMPT"
+          ssh "${options[@]}" -p "$SSH_PORT" "$destination" "umask 077; mkdir -p '$stage'"
+          scp "${options[@]}" -P "$SSH_PORT" "$RELEASE_DIR/"* "$scp_destination:$stage/"
+          ssh "${options[@]}" -p "$SSH_PORT" "$destination" \
+            "bash '$stage/deploy.sh' '$stage' '$IMAGE'"
+
+      - name: Record the deployed version
+        env:
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+        run: |
+          printf 'Released Hearth commit %s to production.\n' "$RELEASE_COMMIT" >> "$GITHUB_STEP_SUMMARY"
+          printf '\nProduction data stays in the VPS database volume.\n' >> "$GITHUB_STEP_SUMMARY"

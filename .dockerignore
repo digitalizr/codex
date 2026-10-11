@@ -8,6 +8,8 @@ dist
 data
 .env
 .env.*
+production.env
+current-image.env
 *.log
 *.tsbuildinfo
 *.zip

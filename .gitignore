@@ -6,3 +6,5 @@ data/*.sqlite*
 .env
 .env.*
 !.env.example
+production.env
+current-image.env

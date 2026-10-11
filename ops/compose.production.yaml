@@ -1,0 +1,62 @@
+name: hearth-production
+
+services:
+  hearth:
+    image: '${HEARTH_IMAGE:?Set HEARTH_IMAGE to the loaded production image for this revision}'
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${HEARTH_PORT:-3000}:3000'
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      GROCERY_DB_PATH: /app/data/household.sqlite
+    volumes:
+      - hearth-data:/app/data
+    mem_limit: 1024m
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  caddy:
+    profiles: [edge]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      APP_DOMAIN: '${APP_DOMAIN:-}'
+      BASIC_AUTH_USER: '${BASIC_AUTH_USER:-}'
+      BASIC_AUTH_HASH: '${BASIC_AUTH_HASH:-}'
+    depends_on:
+      hearth:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:2019/config/']
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 6
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+volumes:
+  hearth-data:
+    name: hearth-production-data
+  caddy-data:
+    name: hearth-production-caddy-data
+  caddy-config:
+    name: hearth-production-caddy-config
