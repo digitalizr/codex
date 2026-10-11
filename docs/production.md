@@ -38,7 +38,7 @@ Review [the Ubuntu bootstrap script](../ops/bootstrap-ubuntu.sh), then run these
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/digitalizr/codex/main/ops/bootstrap-ubuntu.sh -o /root/hearth-setup.sh
-bash /root/hearth-setup.sh groceries.gempkahub.com
+bash /root/hearth-setup.sh groceries.gempakhub.com
 ```
 
 The script installs Docker and Compose from Ubuntu's signed repositories, creates the `deploy` account and private directories, and creates a private `production.env` while preserving any existing one. It keeps root SSH authentication as configured. It accepts an optional deployment **public** key as its second argument; never pass a private key or password as an installer argument.
@@ -108,7 +108,7 @@ scp "%USERPROFILE%\.ssh\hearth_github_production.pub" root@YOUR_HOST:/root/heart
 In your **existing Ubuntu root terminal on the VPS**, register that public key with the installer you already downloaded. Rerunning it preserves the existing production configuration:
 
 ```sh
-bash /root/hearth-setup.sh groceries.gempkahub.com "$(tr -d '\r' < /root/hearth_github_production.pub)"
+bash /root/hearth-setup.sh groceries.gempakhub.com "$(tr -d '\r' < /root/hearth_github_production.pub)"
 ```
 
 The command removes Windows carriage returns from the uploaded public key before registering it. The installer prints a server host-key fingerprint and public `known_hosts` line. Verify that fingerprint through the Hetzner console and save the matching public line for GitHub's `SSH_KNOWN_HOSTS` secret. Use its host string for `SSH_HOST`.
@@ -237,9 +237,9 @@ Open <http://localhost:3001>. Close the SSH session to close the tunnel. Househo
 
 ## Optional: a domain with HTTPS
 
-For your registered domain `gempkahub.com`, you can use **`groceries.gempkahub.com`** for Hearth. A subdomain is an address under the domain you already own; it does not require another domain purchase.
+For your registered domain `gempakhub.com`, you can use **`groceries.gempakhub.com`** for Hearth. A subdomain is an address under the domain you already own; it does not require another domain purchase.
 
-In **Cloudflare → gempkahub.com → DNS**, add an **A** record with **Name: `groceries`**, **Content: your server's IPv4 address**, and **Proxy status: DNS only** for the initial setup. This makes `groceries.gempkahub.com` point to the VPS. Add an **AAAA** record only if the server's IPv6 address is configured and reachable. Allow inbound 80/443 in the Hetzner firewall.
+In **Cloudflare → gempakhub.com → DNS**, add an **A** record with **Name: `groceries`**, **Content: your server's IPv4 address**, and **Proxy status: DNS only** for the initial setup. This makes `groceries.gempakhub.com` point to the VPS. Add an **AAAA** record only if the server's IPv6 address is configured and reachable. Allow inbound 80/443 in the Hetzner firewall.
 
 Generate a bcrypt password hash with Caddy's interactive prompt; the cleartext password does not appear in the command:
 
@@ -251,7 +251,7 @@ Edit the server's `/opt/hearth/production.env`:
 
 ```dotenv
 HEARTH_EDGE_ENABLED=true
-APP_DOMAIN=groceries.gempkahub.com
+APP_DOMAIN=groceries.gempakhub.com
 BASIC_AUTH_USER=household
 BASIC_AUTH_HASH='$2a$14$REPLACE_WITH_THE_GENERATED_HASH'
 ```
