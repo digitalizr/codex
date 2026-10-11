@@ -1,0 +1,19 @@
+name: hearth
+
+services:
+  hearth:
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - '${HEARTH_BIND:-127.0.0.1}:${HEARTH_PORT:-3000}:3000'
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      GROCERY_DB_PATH: /app/data/household.sqlite
+    volumes:
+      - hearth-data:/app/data
+    stop_grace_period: 15s
+
+volumes:
+  hearth-data:

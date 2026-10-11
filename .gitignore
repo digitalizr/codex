@@ -1,0 +1,8 @@
+node_modules/
+dist/
+data/*.sqlite*
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
