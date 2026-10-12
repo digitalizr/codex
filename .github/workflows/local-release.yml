@@ -1,4 +1,4 @@
-name: Prepare Local Release
+name: Release Local
 
 on:
   workflow_dispatch:
@@ -15,15 +15,46 @@ on:
         options:
           - linux/amd64
           - linux/arm64
+      target:
+        description: 'Install on your configured laptop runner, or prepare a download'
+        required: true
+        default: laptop
+        type: choice
+        options:
+          - laptop
+          - download
 
 permissions:
   contents: read
+
+concurrency:
+  group: hearth-local-${{ inputs.target }}
+  cancel-in-progress: false
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      commit: ${{ steps.version.outputs.commit }}
+      artifact: ${{ steps.version.outputs.artifact }}
+      platform: ${{ steps.version.outputs.platform }}
     steps:
+      - name: Check the release target
+        env:
+          RELEASE_TARGET: ${{ inputs.target }}
+          WORKFLOW_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_TARGET" != laptop && "$RELEASE_TARGET" != download ]]; then
+            echo 'Choose laptop or download as the local release target.' >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_TARGET" == laptop && "$WORKFLOW_REF" != refs/heads/main ]]; then
+            echo 'Laptop installation is available only from main. Choose main or use the download target.' >&2
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -47,6 +78,7 @@ jobs:
           {
             echo "commit=$commit"
             echo "short=${commit:0:7}"
+            echo "artifact=hearth-local-${commit:0:7}"
             echo "image=hearth-local:$commit"
             echo "platform=$REQUESTED_PLATFORM"
           } >> "$GITHUB_OUTPUT"
@@ -112,7 +144,7 @@ jobs:
       - name: Upload the downloadable release
         uses: actions/upload-artifact@v4
         with:
-          name: hearth-local-${{ steps.version.outputs.short }}
+          name: ${{ steps.version.outputs.artifact }}
           path: ${{ runner.temp }}/hearth-local-release/
           retention-days: 3
           compression-level: 0
@@ -121,9 +153,132 @@ jobs:
       - name: Explain how to test and promote
         env:
           RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+          RELEASE_TARGET: ${{ inputs.target }}
         run: |
           {
-            printf 'Download the artifact below, extract it, start Docker Desktop, and double-click Start-Hearth.cmd.\n'
+            if [[ "$RELEASE_TARGET" == laptop ]]; then
+              printf 'The Windows laptop job will install this release when your configured hearth-local runner is online. Keep Docker Desktop running.\n'
+              printf '\nThe artifact below is also available as a download fallback.\n'
+            else
+              printf 'Download the artifact below, extract it, start Docker Desktop, and double-click Start-Hearth.cmd.\n'
+            fi
             printf '\nTest the Local app at http://localhost:3000.\n'
             printf '\nIf it passes, select Release Production and enter commit %s.\n' "$RELEASE_COMMIT"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  install:
+    name: Install on your Windows laptop
+    needs: prepare
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.target == 'laptop'
+    runs-on: [self-hosted, Windows, hearth-local]
+    timeout-minutes: 15
+    steps:
+      - name: Download this run's verified release
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact }}
+          path: ${{ runner.temp }}/hearth-local-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Install the release with your existing local database
+        shell: powershell
+        env:
+          EXPECTED_COMMIT: ${{ needs.prepare.outputs.commit }}
+          EXPECTED_PLATFORM: ${{ needs.prepare.outputs.platform }}
+          BUNDLE_DIRECTORY: ${{ runner.temp }}/hearth-local-${{ github.run_id }}-${{ github.run_attempt }}
+          RELEASE_RUN_ID: ${{ github.run_id }}
+          RELEASE_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          if ($env:EXPECTED_COMMIT -cnotmatch '^[0-9a-f]{40}$' -or
+              $env:EXPECTED_PLATFORM -cnotin @('linux/amd64', 'linux/arm64') -or
+              $env:RELEASE_RUN_ID -notmatch '^\d+$' -or $env:RELEASE_RUN_ATTEMPT -notmatch '^\d+$') {
+              throw 'The hosted build did not provide a valid release identity.'
+          }
+
+          function Get-PlainReleaseFile {
+              param([string]$Name)
+              $file = Get-Item -LiteralPath (Join-Path $env:BUNDLE_DIRECTORY $Name) -Force
+              if ($file -isnot [System.IO.FileInfo] -or ($file.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                  throw "Release file '$Name' must be a regular file."
+              }
+              return $file
+          }
+
+          function Get-PlainDirectory {
+              param([string]$Path)
+              if (-not (Test-Path -LiteralPath $Path)) {
+                  New-Item -ItemType Directory -Path $Path | Out-Null
+              }
+              $directory = Get-Item -LiteralPath $Path -Force
+              if ($directory -isnot [System.IO.DirectoryInfo] -or ($directory.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                  throw "Release directory '$Path' must be a regular directory."
+              }
+              return $directory.FullName
+          }
+
+          $bundle = Get-Item -LiteralPath $env:BUNDLE_DIRECTORY -Force
+          if ($bundle -isnot [System.IO.DirectoryInfo] -or ($bundle.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+              throw 'The downloaded bundle must be a regular directory.'
+          }
+          $files = @('image.tar.gz', 'compose.yaml', 'Start-Hearth.ps1', 'Start-Hearth.cmd', 'README.txt', 'release.json')
+          $checksumFile = Get-PlainReleaseFile 'SHA256SUMS'
+          $checksums = @(Get-Content -LiteralPath $checksumFile.FullName)
+          if ($checksums.Count -ne $files.Count) { throw 'The release checksum manifest is incomplete.' }
+          $seen = @{}
+          foreach ($line in $checksums) {
+              if ($line -cnotmatch '^([0-9A-Fa-f]{64})  ([A-Za-z0-9][A-Za-z0-9._-]*)$') {
+                  throw 'The release checksum manifest contains an invalid path.'
+              }
+              $expectedHash = $Matches[1]
+              $name = $Matches[2]
+              if ($files -cnotcontains $name -or $seen.ContainsKey($name)) {
+                  throw 'The release checksum manifest contains an unexpected or duplicate file.'
+              }
+              $seen[$name] = $true
+              $file = Get-PlainReleaseFile $name
+              if ((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash -ine $expectedHash) {
+                  throw "Release checksum failed for '$name'. No application was started."
+              }
+          }
+          $manifestFile = Get-PlainReleaseFile 'release.json'
+          $release = Get-Content -LiteralPath $manifestFile.FullName -Raw | ConvertFrom-Json
+          if ($release.commit -cne $env:EXPECTED_COMMIT -or
+              $release.image -cne "hearth-local:$($env:EXPECTED_COMMIT)" -or
+              $release.platform -cne $env:EXPECTED_PLATFORM) {
+              throw 'The downloaded release does not match the exact hosted build.'
+          }
+          if ([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) { throw 'Run the laptop runner as your signed-in Windows user.' }
+          $localRoot = Get-PlainDirectory $env:LOCALAPPDATA
+          $hearthRoot = Get-PlainDirectory (Join-Path $localRoot 'Hearth')
+          $releasesRoot = Get-PlainDirectory (Join-Path $hearthRoot 'releases')
+          $releaseName = "$($env:EXPECTED_COMMIT)-$($env:RELEASE_RUN_ID)-$($env:RELEASE_RUN_ATTEMPT)"
+          $destination = Join-Path $releasesRoot $releaseName
+          if (Test-Path -LiteralPath $destination) { throw 'This release folder already exists; rerun the job with a new attempt.' }
+          $destination = Get-PlainDirectory $destination
+          foreach ($name in ($files + 'SHA256SUMS')) {
+              Copy-Item -LiteralPath (Join-Path $env:BUNDLE_DIRECTORY $name) -Destination (Join-Path $destination $name)
+          }
+          $portConfig = Join-Path $hearthRoot '.env'
+          if (Test-Path -LiteralPath $portConfig) {
+              $configuration = Get-Item -LiteralPath $portConfig -Force
+              if ($configuration -isnot [System.IO.FileInfo] -or ($configuration.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                  throw 'The optional Hearth .env must be a regular file.'
+              }
+              Copy-Item -LiteralPath $portConfig -Destination (Join-Path $destination '.env')
+          }
+
+          $launcherOutput = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $destination 'Start-Hearth.ps1') -NoBrowser
+          $launcherStatus = $LASTEXITCODE
+          $launcherOutput | ForEach-Object { Write-Host $_ }
+          if ($launcherStatus -ne 0) { throw 'The local launcher failed; review its message above. Household data was retained.' }
+          $ready = @($launcherOutput | Where-Object { $_ -match '^Hearth .+ is ready at http://localhost:\d+$' })
+          if ($ready.Count -ne 1) { throw 'The launcher did not report its local address.' }
+          $address = $ready[0] -replace '^Hearth .+ is ready at ', ''
+          @(
+              "Installed Local Hearth at $address on your Windows laptop.",
+              '',
+              "Test the app, then use Release Production with commit $($env:EXPECTED_COMMIT).",
+              '',
+              "Release files: $destination. The existing hearth_hearth-data database volume was reused."
+          ) | Out-File -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append

@@ -1,13 +1,13 @@
 # Release Hearth to Hetzner
 
-Develop changes, merge them into GitHub, prepare a local download for testing, then promote the tested commit manually. Git pushes and pull requests validate the app; they do not deploy it.
+Develop changes, merge them into GitHub, release locally for testing, then promote the tested commit manually. Git pushes and pull requests validate the app; they do not deploy it.
 
-| GitHub Actions workflow                                         | Result                                                                                |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [Prepare Local Release](../.github/workflows/local-release.yml) | Builds a downloadable Windows bundle for the selected commit and laptop architecture. |
-| [Release Production](../.github/workflows/release.yml)          | Builds the selected commit for ARM64 and deploys it over SSH to the CAX11.            |
+| GitHub Actions workflow                                 | Result                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [Release Local](../.github/workflows/local-release.yml) | Builds and installs on your Windows runner, or prepares a downloadable bundle. |
+| [Release Production](../.github/workflows/release.yml)  | Builds the selected commit for ARM64 and deploys it over SSH to the CAX11.     |
 
-No application image registry or persistent laptop runner is required. GitHub prepares the download on a hosted runner; you start it locally.
+No application image registry is required. Automatic local deployment uses a Windows runner on your laptop; the download target works without one. GitHub builds both releases on hosted runners.
 
 Your **Hetzner CAX11 runs Ubuntu 26.04.1 LTS on ARM64**. The installation commands below use Ubuntu's signed package repositories and also apply to Ubuntu 24.04 ARM64. They assume a working administrator login. Replace `YOUR_HOST` with the server IP or SSH hostname throughout. These are setup instructions, not a claim that the server has already been configured or deployed.
 
@@ -15,10 +15,10 @@ Windows users can complete [deployment key setup in Command Prompt](#windows-com
 
 ## Test the commit locally
 
-1. Open **GitHub → Actions → Prepare Local Release → Run workflow** and select **`main`**.
+1. Complete the [one-time Windows runner setup](docker.md#automatic-windows-releases), then open **GitHub → Actions → Release Local → Run workflow** and select **`main`**.
 2. Leave `commit` blank for that version of `main`, or enter a full 40-character lowercase SHA included in it. Select **`linux/amd64`** for a typical Windows laptop or **`linux/arm64`** for an ARM64 Docker engine.
-3. After success, download **`hearth-local-<first seven SHA characters>`** from that run's **Artifacts** section and extract the whole ZIP.
-4. Start Docker Desktop using Linux containers, then double-click **`Start-Hearth.cmd`**. It checks the release and architecture, starts Hearth, and opens **http://localhost:3000**.
+3. Keep **`target: laptop`**, with your runner online and Docker Desktop running. After the deployment succeeds, open **http://localhost:3000**.
+4. Without a laptop runner, choose **`target: download`** instead, download **`hearth-local-<first seven SHA characters>`** from that run's **Artifacts** section, extract the whole ZIP, and double-click **`Start-Hearth.cmd`** with Docker Desktop running.
 5. Test the household workflow, then use the footer's copy button beside **Local · version · commit** to copy the full running SHA.
 
 Paste that SHA into the **`commit`** field of **Release Production** after completing the server setup below. The production footer identifies **Production**, its package version, and the deployed commit. Your laptop's `hearth_hearth-data` volume and the server's `hearth-production-data` volume remain independent; no household database is transferred. See [the local Docker guide](docker.md) for updates and backups.

@@ -4,13 +4,15 @@ A calmer way to manage the groceries in your home. Hearth keeps a shared picture
 
 ## Docker Desktop on your laptop
 
-On Windows, GitHub can prepare a release you start by double-clicking:
+On Windows, **Release Local** can install updates directly into Docker Desktop:
 
-1. Open **GitHub → Actions → Prepare Local Release → Run workflow**. Select `main`, leave `commit` blank for that version of `main`, and choose `linux/amd64` for a typical Windows laptop (`linux/arm64` for an ARM64 Docker engine).
-2. After the run succeeds, download **`hearth-local-<short SHA>`** from its **Artifacts** section and extract the entire ZIP.
-3. Start Docker Desktop using Linux containers, then double-click **`Start-Hearth.cmd`** in the extracted folder.
+1. Complete the [one-time Windows runner setup](docs/docker.md#automatic-windows-releases). Keep that runner and Docker Desktop running.
+2. Open **GitHub → Actions → Release Local → Run workflow**. Select `main`, leave `commit` blank for that version of `main`, keep `target` set to **`laptop`**, and choose `linux/amd64` for a typical Windows laptop (`linux/arm64` for an ARM64 Docker engine).
+3. After the laptop deployment succeeds, open **http://localhost:3000**.
 
-The launcher verifies the files, image, and architecture, starts Hearth, and opens **http://localhost:3000**. The footer shows **Local**, the package version, and the running commit; use its copy button to keep the full tested SHA. Existing laptop data remains in `hearth_hearth-data` when you start a newer release. GitHub builds the download on its hosted runner; no laptop runner or remote access to your laptop is needed.
+GitHub builds and tests the image on its hosted runner; the Windows runner downloads the verified bundle and starts the app on your laptop. The footer shows **Local**, the package version, and the running commit; use its copy button to keep the full tested SHA. Existing laptop data remains in `hearth_hearth-data` when you start a newer release. The laptop runner handles only manually requested local releases on `main`; pull-request validation runs on GitHub.
+
+For a release without a laptop runner, choose **`target: download`**, download **`hearth-local-<short SHA>`** from the run's **Artifacts** section, extract the entire ZIP, and double-click **`Start-Hearth.cmd`** with Docker Desktop running.
 
 You can also build from source on Windows, macOS, or Linux: download or clone [the repository](https://github.com/digitalizr/codex), open its folder containing `compose.yaml`, and run:
 
@@ -26,10 +28,10 @@ See [the Docker installation guide](docs/docker.md) for stopping/restarting, bac
 
 The two manual workflows serve separate steps:
 
-| Workflow                  | Result                                                                   |
-| ------------------------- | ------------------------------------------------------------------------ |
-| **Prepare Local Release** | Builds a downloadable Windows bundle for testing on your laptop.         |
-| **Release Production**    | Builds the selected commit for ARM64 and deploys it over SSH to Hetzner. |
+| Workflow               | Result                                                                   |
+| ---------------------- | ------------------------------------------------------------------------ |
+| **Release Local**      | Builds and installs on your Windows runner, or prepares a download.      |
+| **Release Production** | Builds the selected commit for ARM64 and deploys it over SSH to Hetzner. |
 
 After testing locally, open **Actions → Release Production → Run workflow**, select `main`, and paste the full tested SHA into `commit`. The production footer identifies **Production**, its package version, and commit. Local and production databases remain independent; releases do not copy household data between them. Production has a backup before each update and health checks with an attempt to restore the previous app if startup fails.
 

@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   Trash2,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { daysUntil, formatQuantity, prettyDate } from '../api';
 import type { InventoryItem, PageProps } from '../types';
@@ -21,6 +22,50 @@ import '../inventory.css';
 
 type ItemAction = { item: InventoryItem; kind: 'add' | 'consume' | 'discard' | 'edit' };
 type StatusFilter = 'all' | 'good' | 'low' | 'out' | 'expiring' | 'refill';
+type Character = { theme: 'leaf' | 'peach' | 'butter' | 'berry' | 'sky' | 'coffee'; line: string };
+
+function groceryCharacter(item: InventoryItem, category: string): Character {
+  const name = `${item.name} ${item.emoji}`.toLowerCase();
+  const characters: [RegExp, Character][] = [
+    [/coffee|☕/, { theme: 'coffee', line: 'Making mornings a little warmer.' }],
+    [/peanut|nut|🥜/, { theme: 'coffee', line: 'Your snack cupboard’s smooth operator.' }],
+    [/avocado|🥑/, { theme: 'leaf', line: 'Toast’s favourite plus-one.' }],
+    [
+      /spinach|salad|lettuce|broccoli|🥬|🥦/,
+      { theme: 'leaf', line: 'A little green goes a long way.' },
+    ],
+    [/tomato|🍅/, { theme: 'peach', line: 'Small, bright, full of possibility.' }],
+    [/banana|🍌/, { theme: 'butter', line: 'A bunch of everyday sunshine.' }],
+    [/milk|🥛/, { theme: 'sky', line: 'Your coffee’s better half.' }],
+    [/egg|🥚/, { theme: 'butter', line: 'Ready to crack on with breakfast.' }],
+    [/yogurt|yoghurt|🥣/, { theme: 'berry', line: 'A soft spot for slow mornings.' }],
+    [/butter|🧈/, { theme: 'butter', line: 'The little golden touch.' }],
+    [/bread|toast|🍞|🥖/, { theme: 'coffee', line: 'Comfort, one slice at a time.' }],
+    [/rice|🍚/, { theme: 'butter', line: 'Small grains. Big dinner energy.' }],
+    [/pasta|noodle|🍝/, { theme: 'peach', line: 'Dinner’s dependable plus-one.' }],
+    [/salmon|fish|🐟/, { theme: 'sky', line: 'A very good catch for dinner.' }],
+    [/bean|chickpea|lentil|🫘/, { theme: 'berry', line: 'The pantry’s small-but-mighty one.' }],
+    [/olive|oil|🫒/, { theme: 'leaf', line: 'A golden finish to the good stuff.' }],
+    [/apple|berry|fruit|🍎|🍓|🫐/, { theme: 'peach', line: 'A sweet little everyday pick-me-up.' }],
+    [/cheese|🧀/, { theme: 'butter', line: 'Always welcome at the table.' }],
+  ];
+  const match = characters.find(([pattern]) => pattern.test(name));
+  if (match) return match[1];
+  if (/produce|vegetable|gemüse/i.test(category))
+    return { theme: 'leaf', line: 'A colourful face in your kitchen.' };
+  if (/dairy|milch/i.test(category))
+    return { theme: 'berry', line: 'One of the cool, calm regulars.' };
+  if (/grain|baking|bread/i.test(category))
+    return { theme: 'butter', line: 'Here for the cosy kitchen moments.' };
+  if (/protein|meat|frozen/i.test(category))
+    return { theme: 'sky', line: 'A little something for the next good meal.' };
+  const themes: Character['theme'][] = ['leaf', 'peach', 'butter', 'berry', 'sky', 'coffee'];
+  const seed = [...item.name].reduce((sum, letter) => sum + letter.charCodeAt(0), 0);
+  return {
+    theme: themes[seed % themes.length],
+    line: 'An everyday favourite, with a place at home.',
+  };
+}
 
 function nearestDate(item: InventoryItem, locationId: string) {
   if (locationId === 'all') return item.expiresAt;
@@ -125,38 +170,87 @@ export default function Inventory({
     <div className="inventory-page">
       <div className="page-heading inventory-heading">
         <div>
-          <div className="inventory-eyebrow">A LITTLE ORDER, EVERY DAY</div>
+          <div className="inventory-eyebrow">
+            <Sparkles size={12} /> YOUR KITCHEN, FULL OF CHARACTER
+          </div>
           <h1>
             Your inventory<span className="heading-count">{state.inventory.length}</span>
           </h1>
-          <p>Know what you have. Make room for what you love.</p>
+          <p>
+            The everyday favourites. The dinner heroes.
+            <br />
+            All the good things you already have at home.
+          </p>
         </div>
         <button className="btn btn-primary" onClick={() => setAdding(true)}>
           <Plus size={18} />
           Add an item
         </button>
+        <div className="inventory-heading-art" aria-hidden="true">
+          <span className="inventory-art-orbit" />
+          <span className="inventory-art-emoji lemon">🍋</span>
+          <span className="inventory-art-emoji avocado">🥑</span>
+          <span className="inventory-art-emoji carrot">🥕</span>
+          <span className="inventory-art-caption">a little more delicious.</span>
+          <Sparkles className="inventory-art-sparkle" size={19} />
+        </div>
       </div>
       <div className="inventory-summary-strip">
         <span>
-          <span className="inventory-summary-dot green" />
-          {state.inventory.filter((item) => item.quantity > 0).length} items at home
+          <span className="inventory-summary-symbol" aria-hidden="true">
+            🧺
+          </span>
+          <span>
+            <strong>{state.inventory.filter((item) => item.quantity > 0).length}</strong> items at
+            home
+          </span>
         </span>
         <button
           onClick={() => setStatus(status === 'refill' ? 'all' : 'refill')}
           className={status === 'refill' ? 'active' : ''}
         >
-          <span className="inventory-summary-dot amber" />
-          {lowCount} need a refill
+          <span className="inventory-summary-symbol" aria-hidden="true">
+            🫙
+          </span>
+          <span>
+            <strong>{lowCount}</strong> need a refill
+          </span>
         </button>
         <button
           onClick={() => setStatus(status === 'expiring' ? 'all' : 'expiring')}
           className={status === 'expiring' ? 'active' : ''}
         >
-          <CalendarDays size={14} />
-          {expiringCount} to use soon
+          <span className="inventory-summary-symbol" aria-hidden="true">
+            🌱
+          </span>
+          <span>
+            <strong>{expiringCount}</strong> to use soon
+          </span>
         </button>
       </div>
-      <div className="inventory-location-tabs" role="tablist" aria-label="Storage locations">
+      <div className="inventory-shelf-heading">
+        <span>Find your favourites</span>
+        <span>A little order on every shelf.</span>
+      </div>
+      <div
+        className="inventory-location-tabs"
+        role="tablist"
+        aria-label="Storage locations"
+        onKeyDown={(event) => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          const tabs = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+          const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+          const next =
+            event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? tabs.length - 1
+                : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+          event.preventDefault();
+          tabs[next]?.focus();
+          tabs[next]?.click();
+        }}
+      >
         <button
           role="tab"
           aria-selected={locationId === 'all'}
@@ -284,6 +378,7 @@ export default function Inventory({
               item.batches.some((batch) => batch.locationId === location.id && batch.quantity > 0),
             );
             const expiry = expiryInfo(nearestDate(item, locationId));
+            const character = groceryCharacter(item, category?.name ?? '');
             const statusText = { good: 'Well stocked', low: 'Running low', out: 'Out of stock' }[
               item.status
             ];
@@ -302,10 +397,20 @@ export default function Inventory({
                   : 0;
             return (
               <article
-                className={`inventory-item card ${item.status === 'out' ? 'is-out' : ''}`}
+                className={`inventory-item card character-${character.theme} ${item.status === 'out' ? 'is-out' : ''} ${expiry?.tone === 'expired' ? 'is-expired' : ''} ${menuId === item.id ? 'has-open-menu' : ''}`}
                 key={item.id}
               >
                 <div className="inventory-item-top">
+                  <span className="inventory-stage-doodle" aria-hidden="true">
+                    <svg viewBox="0 0 50 50" fill="none">
+                      <path
+                        d="M12 31c7-14 17-16 25-10M10 34c8-4 14-2 18 6M31 7v10M26 12h10M6 13l4 4M40 36l-4 4"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
                   <div className="inventory-product-emoji" aria-hidden="true">
                     {item.emoji}
                   </div>
@@ -359,6 +464,7 @@ export default function Inventory({
                 <div className="inventory-item-name">
                   <span className="inventory-category">{category?.name ?? 'Uncategorized'}</span>
                   <h2>{item.name}</h2>
+                  <p className="inventory-personality">{character.line}</p>
                 </div>
                 <div className="inventory-stock">
                   <div>
@@ -443,7 +549,7 @@ export default function Inventory({
       )}
       <div className="inventory-footer-note">
         <span aria-hidden="true">🌱</span>
-        <p>A little awareness goes a long way. Use older items first and waste less.</p>
+        <p>Good things deserve to be enjoyed. Give the oldest a little love first.</p>
       </div>
       {adding && (
         <AddItemModal
