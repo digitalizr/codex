@@ -20,4 +20,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check native Windows PowerShell 5.1 execution
         shell: powershell
-        run: .\tests\windows-launcher-smoke.ps1
+        run: |
+          try {
+            .\tests\windows-launcher-smoke.ps1
+          } catch {
+            $message = $_.Exception.Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows launcher regression::$message"
+            throw
+          }
