@@ -22,6 +22,8 @@ Local deployments save their verified bundles under **`%LOCALAPPDATA%\Hearth\rel
 
 Only the manual `main` laptop-release job uses this runner. Builds, tests, and pull-request validation run on GitHub-hosted runners. Local releases do not run the production deployment workflow.
 
+If an installation fails, open the failed **Install on your Windows laptop** job and expand its failed step to read the actual error. After an installer fix is published, start a **new Release Local run** on `main` with `commit` blank. Re-running an older failed job keeps that run's original bundle and installer. Keep Docker Desktop and the runner window running for the new release; existing database volumes are retained.
+
 ## Download a release instead
 
 1. Sign in to [digitalizr/codex on GitHub](https://github.com/digitalizr/codex). Open **Actions → Release Local → Run workflow** and select branch **`main`**.

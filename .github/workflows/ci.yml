@@ -13,3 +13,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+  windows-launcher:
+    name: Windows PowerShell launcher
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check native Windows PowerShell 5.1 execution
+        shell: powershell
+        run: .\tests\windows-launcher-smoke.ps1

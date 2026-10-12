@@ -35,6 +35,37 @@ function Get-HearthPlainFile {
     return $file
 }
 
+function Assert-HearthImageIdentity {
+    param([string]$Image, [string]$Architecture, [string]$Commit)
+    $imageJson = Invoke-HearthDocker -DockerArguments @('image', 'inspect', $Image)
+    try {
+        if (-not $imageJson.TrimStart().StartsWith('[')) { throw 'Invalid image collection.' }
+        $parsed = ConvertFrom-Json -InputObject $imageJson -ErrorAction Stop
+        $images = @($parsed)
+        if ($images.Count -ne 1 -or $images[0] -isnot [System.Management.Automation.PSCustomObject]) {
+            throw 'Invalid image collection.'
+        }
+        $metadata = $images[0]
+        if ($metadata.Os -isnot [string] -or $metadata.Architecture -isnot [string] -or
+            $metadata.Config -isnot [System.Management.Automation.PSCustomObject] -or
+            $metadata.Config.Env -isnot [System.Array]) {
+            throw 'Invalid image fields.'
+        }
+        foreach ($entry in $metadata.Config.Env) {
+            if ($entry -isnot [string]) { throw 'Invalid image environment.' }
+        }
+        $commits = @($metadata.Config.Env | Where-Object { $_.StartsWith('HEARTH_COMMIT=', [StringComparison]::Ordinal) })
+        if ($commits.Count -ne 1) { throw 'Missing or duplicate image commit.' }
+        $bakedCommit = $commits[0].Substring('HEARTH_COMMIT='.Length)
+        if ($bakedCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'Invalid image commit.' }
+    } catch {
+        throw 'Docker returned invalid release image metadata. Extract a fresh artifact; no application was started.'
+    }
+    if ($metadata.Os -cne 'linux' -or $metadata.Architecture -cne $Architecture -or $bakedCommit -cne $Commit) {
+        throw 'The loaded image platform or baked HEARTH_COMMIT does not match this release. It has not been started.'
+    }
+}
+
 function Test-HearthChecksums {
     $required = @('image.tar.gz', 'compose.yaml', 'Start-Hearth.ps1', 'Start-Hearth.cmd', 'release.json')
     if (Test-Path -LiteralPath (Join-Path $releaseDirectory 'README.txt')) { $required += 'README.txt' }
@@ -168,8 +199,7 @@ try {
     Write-Host "Loading Hearth $($release.version) ($($release.commit))..." -ForegroundColor Cyan
     $loadOutput = Invoke-HearthDocker -DockerArguments @('load', '--input', (Join-Path $releaseDirectory 'image.tar.gz'))
     if (($loadOutput -split "`n") -cnotcontains "Loaded image: $($release.image)") { throw 'The image archive did not load the exact release tag. Extract a fresh artifact and retry.' }
-    $imageDetails = Invoke-HearthDocker -DockerArguments @('image', 'inspect', $release.image, '--format', '{{.Os}}|{{.Architecture}}|{{range .Config.Env}}{{ $parts := split . "=" }}{{if eq (index $parts 0) "HEARTH_COMMIT"}}{{index $parts 1}}{{end}}{{end}}')
-    if ($imageDetails -cne "linux|$architecture|$($release.commit)") { throw 'The loaded image platform or baked HEARTH_COMMIT does not match this release. It has not been started.' }
+    Assert-HearthImageIdentity -Image $release.image -Architecture $architecture -Commit $release.commit
     $env:HEARTH_IMAGE = $release.image
     $env:HEARTH_PORT = [string]$port
     Write-Host 'Starting Hearth with your existing pantry database...' -ForegroundColor Cyan
