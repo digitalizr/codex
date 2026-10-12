@@ -1,0 +1,129 @@
+name: Prepare Local Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Full commit SHA to test (blank uses this version of main)'
+        required: false
+        type: string
+      platform:
+        description: 'Docker Desktop architecture (most Windows laptops use amd64)'
+        required: true
+        default: linux/amd64
+        type: choice
+        options:
+          - linux/amd64
+          - linux/arm64
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select the local version
+        id: version
+        env:
+          REQUESTED_COMMIT: ${{ inputs.commit }}
+          WORKFLOW_COMMIT: ${{ github.sha }}
+          REQUESTED_PLATFORM: ${{ inputs.platform }}
+        run: |
+          set -euo pipefail
+          commit="${REQUESTED_COMMIT:-$WORKFLOW_COMMIT}"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$REQUESTED_PLATFORM" == linux/amd64 || "$REQUESTED_PLATFORM" == linux/arm64 ]]
+          git cat-file -e "$commit^{commit}"
+          git merge-base --is-ancestor "$commit" "$WORKFLOW_COMMIT"
+          git checkout --detach "$commit"
+          test -f ops/local-release/Start-Hearth.ps1
+          test -f server/release.mjs
+          {
+            echo "commit=$commit"
+            echo "short=${commit:0:7}"
+            echo "image=hearth-local:$commit"
+            echo "platform=$REQUESTED_PLATFORM"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Validate the local version
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the local image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ steps.version.outputs.platform }}
+          tags: ${{ steps.version.outputs.image }}
+          build-args: HEARTH_COMMIT=${{ steps.version.outputs.commit }}
+          outputs: type=docker,dest=${{ runner.temp }}/hearth-local-image.tar
+          cache-from: type=gha,scope=hearth-local-${{ steps.version.outputs.platform }}
+          cache-to: type=gha,mode=max,scope=hearth-local-${{ steps.version.outputs.platform }}
+
+      - name: Package the Windows local release
+        env:
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+          RELEASE_IMAGE: ${{ steps.version.outputs.image }}
+          RELEASE_PLATFORM: ${{ steps.version.outputs.platform }}
+          RELEASE_DIR: ${{ runner.temp }}/hearth-local-release
+          IMAGE_FILE: ${{ runner.temp }}/hearth-local-image.tar
+        run: |
+          set -euo pipefail
+          mkdir -p "$RELEASE_DIR"
+          gzip -c "$IMAGE_FILE" > "$RELEASE_DIR/image.tar.gz"
+          cp ops/local-release/compose.yaml ops/local-release/Start-Hearth.ps1 \
+            ops/local-release/Start-Hearth.cmd ops/local-release/README.txt "$RELEASE_DIR/"
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
+          const release = {
+            version,
+            commit: process.env.RELEASE_COMMIT,
+            image: process.env.RELEASE_IMAGE,
+            platform: process.env.RELEASE_PLATFORM,
+          };
+          writeFileSync(join(process.env.RELEASE_DIR, 'release.json'), JSON.stringify(release, null, 2) + '\n');
+          JS
+          cd "$RELEASE_DIR"
+          sha256sum image.tar.gz compose.yaml Start-Hearth.ps1 Start-Hearth.cmd \
+            README.txt release.json > SHA256SUMS
+
+      - name: Upload the downloadable release
+        uses: actions/upload-artifact@v4
+        with:
+          name: hearth-local-${{ steps.version.outputs.short }}
+          path: ${{ runner.temp }}/hearth-local-release/
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Explain how to test and promote
+        env:
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+        run: |
+          {
+            printf 'Download the artifact below, extract it, start Docker Desktop, and double-click Start-Hearth.cmd.\n'
+            printf '\nTest the Local app at http://localhost:3000.\n'
+            printf '\nIf it passes, select Release Production and enter commit %s.\n' "$RELEASE_COMMIT"
+          } >> "$GITHUB_STEP_SUMMARY"

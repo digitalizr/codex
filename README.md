@@ -4,21 +4,36 @@ A calmer way to manage the groceries in your home. Hearth keeps a shared picture
 
 ## Docker Desktop on your laptop
 
-Start Docker Desktop. Open [the GitHub repository](https://github.com/digitalizr/codex), choose **Code → Download ZIP**, and extract it (the folder is typically named `codex-main`). Alternatively, clone the repository with `git clone https://github.com/digitalizr/codex.git`. Open a terminal in the extracted or cloned project folder containing `compose.yaml`, then run:
+On Windows, GitHub can prepare a release you start by double-clicking:
+
+1. Open **GitHub → Actions → Prepare Local Release → Run workflow**. Select `main`, leave `commit` blank for that version of `main`, and choose `linux/amd64` for a typical Windows laptop (`linux/arm64` for an ARM64 Docker engine).
+2. After the run succeeds, download **`hearth-local-<short SHA>`** from its **Artifacts** section and extract the entire ZIP.
+3. Start Docker Desktop using Linux containers, then double-click **`Start-Hearth.cmd`** in the extracted folder.
+
+The launcher verifies the files, image, and architecture, starts Hearth, and opens **http://localhost:3000**. The footer shows **Local**, the package version, and the running commit; use its copy button to keep the full tested SHA. Existing laptop data remains in `hearth_hearth-data` when you start a newer release. GitHub builds the download on its hosted runner; no laptop runner or remote access to your laptop is needed.
+
+You can also build from source on Windows, macOS, or Linux: download or clone [the repository](https://github.com/digitalizr/codex), open its folder containing `compose.yaml`, and run:
 
 ```sh
 docker compose up -d --build --wait
 ```
 
-Open **http://localhost:3000**. Docker builds the app and creates its dedicated SQLite database in a persistent volume. No Node.js or database installation is needed on your laptop.
+Docker builds the app; open it at the same local address, with its persistent database. No separate Node.js or database installation is needed. Source builds show the package version; their commit is unknown unless you supply `HEARTH_COMMIT` when building.
 
 See [the Docker installation guide](docs/docker.md) for stopping/restarting, backups, updates, port changes, and sharing with your partner on home Wi-Fi.
 
 ## Release to a Hetzner VPS
 
-Use your laptop as the development environment and a Hetzner CAX11 as production. GitHub validates changes automatically; **Actions → Release Hearth → Run workflow** builds the selected commit for ARM64 and deploys it over SSH. Production has its own persistent database, a backup before each update, and health checks with an attempt to restore the previous app if startup fails.
+The two manual workflows serve separate steps:
 
-Follow [the production setup guide](docs/production.md) once to configure Ubuntu, the deployment SSH key, and GitHub's encrypted repository secrets. Access can stay private through SSH or use a Cloudflare DNS subdomain with Caddy HTTPS and one shared household password.
+| Workflow                  | Result                                                                   |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Prepare Local Release** | Builds a downloadable Windows bundle for testing on your laptop.         |
+| **Release Production**    | Builds the selected commit for ARM64 and deploys it over SSH to Hetzner. |
+
+After testing locally, open **Actions → Release Production → Run workflow**, select `main`, and paste the full tested SHA into `commit`. The production footer identifies **Production**, its package version, and commit. Local and production databases remain independent; releases do not copy household data between them. Production has a backup before each update and health checks with an attempt to restore the previous app if startup fails.
+
+Follow [the production setup guide](docs/production.md) once to configure Ubuntu, the deployment SSH key, and GitHub's encrypted repository secrets. The default access is private through SSH. To open **`groceries.gempakhub.com`**, configure Cloudflare DNS, Caddy HTTPS, and the shared password before enabling public access; a successful deployment alone does not enable that domain.
 
 ## Run it without Docker
 

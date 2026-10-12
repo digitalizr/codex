@@ -1,4 +1,4 @@
-name: Release Hearth
+name: Release Production
 
 on:
   workflow_dispatch:
@@ -72,6 +72,7 @@ jobs:
           context: .
           platforms: linux/arm64
           tags: ${{ steps.version.outputs.image }}
+          build-args: HEARTH_COMMIT=${{ steps.version.outputs.commit }}
           outputs: type=docker,dest=${{ runner.temp }}/hearth-image.tar
           cache-from: type=gha,scope=hearth-arm64
           cache-to: type=gha,mode=max,scope=hearth-arm64

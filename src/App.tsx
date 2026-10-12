@@ -17,9 +17,10 @@ import {
   Check,
   AlertCircle,
   Heart,
+  Copy,
 } from 'lucide-react';
 import { api, setActiveMemberId } from './api';
-import type { HouseholdState, InventoryItem, Page } from './types';
+import type { HouseholdState, InventoryItem, Page, ReleaseInfo } from './types';
 import Overview from './pages/Overview';
 import Inventory from './pages/Inventory';
 import Shopping, { CreateListModal } from './pages/Shopping';
@@ -42,6 +43,7 @@ const readPage = (): Page => {
     : 'overview';
 };
 type Toast = { id: number; message: string; kind: 'success' | 'error' };
+let releaseInfoRequest: Promise<ReleaseInfo> | undefined;
 export default function App() {
   const [state, setState] = useState<HouseholdState | null>(null);
   const [page, setPage] = useState<Page>(readPage);
@@ -54,6 +56,8 @@ export default function App() {
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState('');
   const [inventorySearch, setInventorySearch] = useState('');
+  const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null);
+  const [releaseChecked, setReleaseChecked] = useState(false);
   const notify = useCallback((message: string, kind: 'success' | 'error' = 'success') => {
     const id = Date.now() + Math.random();
     setToasts((items) => [...items, { id, message, kind }]);
@@ -63,6 +67,36 @@ export default function App() {
     const data = await api<HouseholdState>('/state');
     setState(data);
     setError('');
+  }, []);
+  useEffect(() => {
+    let mounted = true;
+    releaseInfoRequest ??= api<ReleaseInfo>('/version');
+    void releaseInfoRequest
+      .then((data) => {
+        if (
+          mounted &&
+          typeof data.version === 'string' &&
+          data.version.trim() &&
+          data.version.length <= 64 &&
+          (data.environment === 'local' || data.environment === 'production')
+        ) {
+          setReleaseInfo({
+            version: data.version,
+            environment: data.environment,
+            commit:
+              typeof data.commit === 'string' && /^[a-f0-9]{40}$/i.test(data.commit)
+                ? data.commit
+                : null,
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setReleaseChecked(true);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
   useEffect(() => {
     void refresh().catch((e) => setError((e as Error).message));
@@ -111,6 +145,24 @@ export default function App() {
   const activeMember = state?.members.find((m) => m.id === memberId);
   const currentPage = navigation.find((n) => n.id === page)?.label || 'Household settings';
   const sharedProps = state ? { state, refresh, notify, memberId } : null;
+  const releaseEnvironment = releaseInfo?.environment === 'production' ? 'Production' : 'Local';
+  const releaseLabel = releaseInfo
+    ? `${releaseEnvironment}, version ${releaseInfo.version}${releaseInfo.commit ? `, commit ${releaseInfo.commit}` : ''}`
+    : '';
+  const canCopyCommit = !!(
+    releaseInfo?.commit &&
+    window.isSecureContext &&
+    navigator.clipboard?.writeText
+  );
+  async function copyCommit() {
+    if (!releaseInfo?.commit || !canCopyCommit) return;
+    try {
+      await navigator.clipboard.writeText(releaseInfo.commit);
+      notify('Running commit copied.');
+    } catch {
+      notify('Could not copy the commit. Please try again.', 'error');
+    }
+  }
   return (
     <div className="app-shell">
       {mobileMenu && (
@@ -287,7 +339,45 @@ export default function App() {
                   <span>
                     <Heart size={10} /> A little care for your everyday.
                   </span>
-                  <span>Your household. A little more in sync.</span>
+                  {releaseInfo ? (
+                    <div
+                      className={`release-badge ${releaseInfo.environment}`}
+                      role="group"
+                      aria-label={releaseLabel}
+                      title={releaseLabel}
+                    >
+                      <span className="release-environment">
+                        <span className="release-dot" aria-hidden="true" />
+                        {releaseEnvironment}
+                      </span>
+                      <span className="release-separator" aria-hidden="true">
+                        ·
+                      </span>
+                      <span className="release-version">v{releaseInfo.version}</span>
+                      {releaseInfo.commit && (
+                        <>
+                          <span className="release-separator" aria-hidden="true">
+                            ·
+                          </span>
+                          <code>{releaseInfo.commit.slice(0, 7)}</code>
+                          {canCopyCommit && (
+                            <button
+                              className="release-copy"
+                              onClick={() => void copyCommit()}
+                              aria-label={`Copy running commit ${releaseInfo.commit}`}
+                              title={`Copy running commit ${releaseInfo.commit}`}
+                            >
+                              <Copy size={10} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="release-unavailable">
+                      {releaseChecked ? 'Version unavailable' : 'Checking version…'}
+                    </span>
+                  )}
                 </footer>
               </>
             )

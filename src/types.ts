@@ -106,3 +106,8 @@ export interface PageProps {
   notify: (message: string, kind?: 'success' | 'error') => void;
   memberId: string;
 }
+export interface ReleaseInfo {
+  version: string;
+  commit: string | null;
+  environment: 'local' | 'production';
+}

@@ -2,13 +2,17 @@ name: hearth
 
 services:
   hearth:
-    build: .
+    build:
+      context: .
+      args:
+        HEARTH_COMMIT: '${HEARTH_COMMIT:-development}'
     init: true
     restart: unless-stopped
     ports:
       - '${HEARTH_BIND:-127.0.0.1}:${HEARTH_PORT:-3000}:3000'
     environment:
       NODE_ENV: production
+      HEARTH_ENVIRONMENT: local
       PORT: '3000'
       GROCERY_DB_PATH: /app/data/household.sqlite
     volumes:

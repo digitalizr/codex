@@ -1,5 +1,6 @@
 import express from 'express';
 import { newId, now, rounded } from './db.mjs';
+import { getReleaseMetadata } from './release.mjs';
 
 export class ApiError extends Error {
   constructor(status, message, code = 'INVALID_REQUEST') {
@@ -62,6 +63,7 @@ const id = (value) => {
 export function createApi(s) {
   const api = express.Router();
   api.use(express.json({ limit: '100kb' }));
+  api.get('/version', (req, res) => res.json(getReleaseMetadata()));
   const existing = (table, value, label = table.slice(0, -1)) => {
     const row = s.get(`SELECT * FROM ${table} WHERE id=?`, id(value));
     if (!row) fail(404, `${label[0].toUpperCase() + label.slice(1)} not found.`, 'NOT_FOUND');

@@ -1,0 +1,22 @@
+name: hearth
+
+services:
+  hearth:
+    image: '${HEARTH_IMAGE:?Start this release with Start-Hearth.cmd}'
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${HEARTH_PORT:-3000}:3000'
+    environment:
+      NODE_ENV: production
+      HEARTH_ENVIRONMENT: local
+      PORT: '3000'
+      GROCERY_DB_PATH: /app/data/household.sqlite
+    volumes:
+      - hearth-data:/app/data
+    stop_grace_period: 15s
+
+volumes:
+  hearth-data:
+    name: hearth_hearth-data

@@ -1,10 +1,27 @@
 # Release Hearth to Hetzner
 
-Develop and test on your laptop, merge changes into GitHub, then press **Run workflow** to release the selected commit. Git pushes and pull requests validate the app; they do not deploy it. The release workflow builds a Linux ARM64 image and sends it over SSH to the CAX11. No application image registry is required.
+Develop changes, merge them into GitHub, prepare a local download for testing, then promote the tested commit manually. Git pushes and pull requests validate the app; they do not deploy it.
+
+| GitHub Actions workflow                                         | Result                                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [Prepare Local Release](../.github/workflows/local-release.yml) | Builds a downloadable Windows bundle for the selected commit and laptop architecture. |
+| [Release Production](../.github/workflows/release.yml)          | Builds the selected commit for ARM64 and deploys it over SSH to the CAX11.            |
+
+No application image registry or persistent laptop runner is required. GitHub prepares the download on a hosted runner; you start it locally.
 
 Your **Hetzner CAX11 runs Ubuntu 26.04.1 LTS on ARM64**. The installation commands below use Ubuntu's signed package repositories and also apply to Ubuntu 24.04 ARM64. They assume a working administrator login. Replace `YOUR_HOST` with the server IP or SSH hostname throughout. These are setup instructions, not a claim that the server has already been configured or deployed.
 
 Windows users can complete [deployment key setup in Command Prompt](#windows-command-prompt). Other multiline laptop examples use Bash: macOS/Linux Terminal or Git Bash/WSL on Windows. For those examples, open **Git Bash** from [Git for Windows](https://git-scm.com/downloads/win), or enable WSL integration in Docker Desktop. Do not paste Bash backslashes or heredocs into Command Prompt or PowerShell. Server commands run in the Ubuntu shell after you connect.
+
+## Test the commit locally
+
+1. Open **GitHub → Actions → Prepare Local Release → Run workflow** and select **`main`**.
+2. Leave `commit` blank for that version of `main`, or enter a full 40-character lowercase SHA included in it. Select **`linux/amd64`** for a typical Windows laptop or **`linux/arm64`** for an ARM64 Docker engine.
+3. After success, download **`hearth-local-<first seven SHA characters>`** from that run's **Artifacts** section and extract the whole ZIP.
+4. Start Docker Desktop using Linux containers, then double-click **`Start-Hearth.cmd`**. It checks the release and architecture, starts Hearth, and opens **http://localhost:3000**.
+5. Test the household workflow, then use the footer's copy button beside **Local · version · commit** to copy the full running SHA.
+
+Paste that SHA into the **`commit`** field of **Release Production** after completing the server setup below. The production footer identifies **Production**, its package version, and the deployed commit. Your laptop's `hearth_hearth-data` volume and the server's `hearth-production-data` volume remain independent; no household database is transferred. See [the local Docker guide](docker.md) for updates and backups.
 
 ## Develop locally
 
@@ -28,7 +45,7 @@ docker compose up -d --build --wait
 git rev-parse HEAD
 ```
 
-Keep that full commit SHA if you want to release the exact version you tested. The laptop and server use separate Docker volumes. Releases transfer application code only; **never copy the development database into production**.
+Keep that full commit SHA if you want to release the exact version you tested. An ordinary source-based Compose build does not set its commit metadata automatically; the footer's commit stays unknown unless you explicitly supply `HEARTH_COMMIT` at build time. The prepared download sets and verifies it for you. The laptop and server use separate Docker volumes. Releases transfer application code only; **never copy the development database into production**.
 
 ## Prepare the server once
 
@@ -211,13 +228,15 @@ If your GitHub plan supports environments for this repository, you can optionall
 
 ## Release manually
 
-1. Open **GitHub → Actions → Release Hearth → Run workflow**.
+1. Open **GitHub → Actions → Release Production → Run workflow**.
 2. Select branch **`main`**.
-3. Leave the optional `commit` input blank to release the workflow's `main` commit, or enter the full 40-character lowercase SHA you tested. The requested commit must be an ancestor of that workflow's `main` commit, or the same commit.
+3. Paste the full 40-character lowercase SHA copied from your tested Local release into `commit`. Leaving it blank releases the workflow's `main` commit. The requested commit must be an ancestor of that workflow's `main` commit, or the same commit.
 4. Press **Run workflow**.
 5. Wait for the workflow and production health check to succeed before using the update.
 
 The workflow validates the selected source, builds an ARM64 image with QEMU, compresses it, and uploads it over the pinned SSH connection. The server checks the release, backs up the existing database, loads or reuses the selected image, and starts the production Compose service. Building happens in GitHub Actions rather than on the small VPS. Only manual releases change production.
+
+A successful container health check does not enable public HTTPS. Bootstrap starts with `HEARTH_EDGE_ENABLED=false`; use the SSH tunnel below, or complete the domain, bcrypt password, and `edge` configuration before expecting **`groceries.gempakhub.com`** to open publicly.
 
 The production SQLite database stays in the named volume **`hearth-production-data`** across releases and container recreation. Its first launch contains the sample household; open **Household settings → Data → Start fresh** before entering real groceries. Subsequent releases preserve the household. Never run `docker compose down --volumes` against this installation.
 
@@ -244,7 +263,7 @@ In **Cloudflare → gempakhub.com → DNS**, add an **A** record with **Name: `g
 Generate a bcrypt password hash with Caddy's interactive prompt; the cleartext password does not appear in the command:
 
 ```sh
-docker run --rm -it caddy:2-alpine caddy hash-password
+docker run --rm -it caddy:2-alpine caddy hash-password --algorithm bcrypt
 ```
 
 Edit the server's `/opt/hearth/production.env`:
@@ -256,7 +275,7 @@ BASIC_AUTH_USER=household
 BASIC_AUTH_HASH='$2a$14$REPLACE_WITH_THE_GENERATED_HASH'
 ```
 
-Use your own subdomain and the complete generated hash. Single quotes preserve the hash's dollar signs in Compose. Keep the file mode `0600`. Run a manual release to enable the `edge` Caddy profile, then visit your `https://` domain and sign in with the shared credentials. Caddy obtains and renews a publicly trusted certificate automatically and checks basic authentication for all forwarded routes before sending them to Hearth; the app's port stays private.
+Use your own subdomain and the complete **60-character bcrypt hash**. Deployment rejects an incomplete hash before stopping the app. Single quotes preserve the hash's dollar signs in Compose. Keep the file mode `0600`. Run **Release Production** to enable the `edge` Caddy profile, then check your `https://` domain in a browser and sign in with the shared credentials. Caddy obtains and renews a publicly trusted certificate automatically and checks basic authentication for all forwarded routes before sending them to Hearth; the app's port stays private.
 
 After the origin's HTTPS certificate works, you may enable Cloudflare's orange-cloud proxy. Set **SSL/TLS → encryption mode** to **Full (strict)**. Do not choose Flexible: it sends HTTP to the HTTPS origin and can cause redirect loops. Shared basic authentication remains required. No Cloudflare API token or integration is needed for this setup.
 
@@ -301,7 +320,7 @@ curl --fail http://127.0.0.1:3000/api/health
 
 `current-image.env` contains the image tag, including the deployed commit SHA. The usual recovery is to merge a corrective commit into `main` and run a new manual release.
 
-To release a known working earlier commit, run **Release Hearth** on branch `main` with its full SHA in the `commit` input. Choose a commit that includes this deployment setup. If that commit's original ARM64 image is still stored on the VPS, deployment reuses that binary rather than replacing its immutable tag with a rebuilt artifact. An older image must support the current database schema; if it does not, use a forward fix.
+To release a known working earlier commit, run **Release Production** on branch `main` with its full SHA in the `commit` input. Choose a commit that includes this deployment setup. If that commit's original ARM64 image is still stored on the VPS, deployment reuses that binary rather than replacing its immutable tag with a rebuilt artifact. An older image must support the current database schema; if it does not, use a forward fix.
 
 Application rollback must preserve the current database. The deploy script does not automatically restore an older database backup: doing so would discard household changes recorded since that backup. Restore data only as a deliberate recovery operation, after preserving the current data and understanding what would be lost.
 
