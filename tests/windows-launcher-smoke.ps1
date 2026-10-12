@@ -82,7 +82,10 @@ public static class FakeHearthDocker {
         $output = & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $bundle 'Start-Hearth.ps1') -NoBrowser 2>&1
         $status = $LASTEXITCODE
         $text = ($output | ForEach-Object { $_.ToString() }) -join "`n"
-        $calls = Get-Content -LiteralPath $env:FAKE_HEARTH_LOG
+        $calls = @()
+        if (Test-Path -LiteralPath $env:FAKE_HEARTH_LOG) {
+            $calls = @(Get-Content -LiteralPath $env:FAKE_HEARTH_LOG)
+        }
         $started = @($calls | Where-Object { $_ -match '^compose\|.*\|up\|' }).Count -gt 0
         if ($mode -eq 'success') {
             if ($status -ne 0 -or -not $started -or $text -notmatch 'is ready at http://localhost:') {
@@ -100,3 +103,6 @@ public static class FakeHearthDocker {
     }
     if (Test-Path -LiteralPath $testRoot) { Remove-Item -LiteralPath $testRoot -Recurse -Force }
 }
+# Expected-negative child scenarios exit 1. Mark success only after every assertion
+# and cleanup completed, so GitHub's PowerShell wrapper does not reuse that status.
+$global:LASTEXITCODE = 0
