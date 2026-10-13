@@ -7,7 +7,7 @@ services:
     init: true
     restart: unless-stopped
     ports:
-      - '127.0.0.1:${HEARTH_PORT:-3000}:3000'
+      - '${HEARTH_BIND:-127.0.0.1}:${HEARTH_PORT:-3000}:3000'
     environment:
       NODE_ENV: production
       HEARTH_ENVIRONMENT: production

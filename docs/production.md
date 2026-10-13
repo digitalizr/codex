@@ -209,7 +209,7 @@ Keep the default private access setting for the first release. The file belongs 
 
 The shipped workflow installs to `/opt/hearth`.
 
-In the Hetzner Cloud firewall, allow inbound SSH on your chosen port. Restrict it to your laptop's public IP where possible, while allowing the GitHub-hosted release runner to reach it when you release. GitHub runner IP ranges change; a laptop-only rule will block the workflow. Do not expose port 3000. Allow ports 80 and 443 only if you enable the domain option below, and retain outbound access needed for Docker pulls, DNS, and certificate issuance.
+In the Hetzner Cloud firewall, allow inbound SSH on your chosen port. Restrict it to your laptop's public IP where possible, while allowing the GitHub-hosted release runner to reach it when you release. GitHub runner IP ranges change; a laptop-only rule will block the workflow. Keep port 3000 closed for private SSH or Caddy access; the explicit direct-binding option below publishes the app port separately. Allow ports 80 and 443 only if you enable the domain option below, and retain outbound access needed for Docker pulls, DNS, and certificate issuance.
 
 ## Configure GitHub once
 
@@ -254,6 +254,14 @@ ssh -p 22 -i ~/.ssh/hearth_github_production \
 
 Open <http://localhost:3001>. Close the SSH session to close the tunnel. Household profiles inside Hearth have no passwords; private SSH access supplies the boundary for this mode.
 
+## Configure the app port's host binding
+
+Set `HEARTH_BIND` in `/opt/hearth/production.env` to control which host interfaces publish the app port. The default is `127.0.0.1`; setting `HEARTH_BIND=0.0.0.0` publishes it on all IPv4 interfaces. `HEARTH_PORT` remains `3000` unless you change it. Run **Release Production** after editing the setting; future releases preserve the server's environment file and reuse this binding. Do not edit only the deployed Compose file, since a release replaces that file.
+
+With `HEARTH_BIND=0.0.0.0`, direct access is `http://YOUR_SERVER_IP:3000` if the firewall permits it. Direct access to this port bypasses Caddy's shared password and Cloudflare Access, and Hearth's profiles are not login accounts. `0.0.0.0` is a listening address, not the address to enter in a browser or a Cloudflare Tunnel service URL.
+
+A bridge-network `cloudflared` container can reach a host address when this port is bound to all interfaces. It can also share the `hearth-production_default` Docker network and use the stable service address `http://hearth:3000` while retaining the loopback host binding. A host-installed or host-network tunnel can use `http://127.0.0.1:3000`. Configure the tunnel's hostname and Access policy separately; changing the host binding does not configure the domain route.
+
 ## Optional: a domain with HTTPS
 
 For your registered domain `gempakhub.com`, you can use **`groceries.gempakhub.com`** for Hearth. A subdomain is an address under the domain you already own; it does not require another domain purchase.
@@ -269,6 +277,7 @@ docker run --rm -it caddy:2-alpine caddy hash-password --algorithm bcrypt
 Edit the server's `/opt/hearth/production.env`:
 
 ```dotenv
+HEARTH_BIND=127.0.0.1
 HEARTH_EDGE_ENABLED=true
 APP_DOMAIN=groceries.gempakhub.com
 BASIC_AUTH_USER=household

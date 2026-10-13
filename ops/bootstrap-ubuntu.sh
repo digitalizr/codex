@@ -74,7 +74,7 @@ if [[ -n "$public_key" ]]; then
 fi
 [[ ! -L /opt/hearth/production.env ]] || die 'production.env must not be a symbolic link.'
 if [[ ! -e /opt/hearth/production.env ]]; then
-  printf 'HEARTH_PORT=3000\nHEARTH_EDGE_ENABLED=false\nAPP_DOMAIN=%s\nBASIC_AUTH_USER=household\n' "$domain" > /opt/hearth/production.env
+  printf 'HEARTH_PORT=3000\nHEARTH_BIND=127.0.0.1\nHEARTH_EDGE_ENABLED=false\nAPP_DOMAIN=%s\nBASIC_AUTH_USER=household\n' "$domain" > /opt/hearth/production.env
 fi
 chown deploy:"$deploy_group" /opt/hearth/production.env
 chmod 0600 /opt/hearth/production.env
@@ -85,9 +85,9 @@ if [[ -n "$public_key" ]]; then
 else
   printf '[hearth] No deployment public key was supplied. Deploy SSH access still needs configuration; authorized_keys was left unchanged.\n'
 fi
-printf '[hearth] App access stays private until a bcrypt hash is configured and edge mode enabled.\n'
+printf '[hearth] The default app binding is private. HEARTH_BIND controls direct app access; edge mode enables HTTPS with a shared password.\n'
 printf '[hearth] Existing root SSH authentication and firewall rules were left unchanged.\n'
-printf '[hearth] Allow SSH (normally TCP 22) for trusted clients/releases; TCP 80/443 only for public HTTPS. Do not expose 3000.\n'
+printf '[hearth] Allow SSH (normally TCP 22) for trusted clients/releases; TCP 80/443 for public HTTPS. Direct app port exposure follows HEARTH_BIND and your firewall.\n'
 printf '\n[hearth] Verify this public server host-key fingerprint from your trusted session:\n'
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 bootstrap_host=$domain
