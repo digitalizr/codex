@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { History, Search, PackagePlus, Utensils, Leaf, Download } from 'lucide-react';
 import { formatQuantity } from '../api';
 import type { PageProps, Activity as ActivityType } from '../types';
+import MemberAvatar from '../components/MemberAvatar';
+import '../household-playful.css';
 const descriptions: Record<ActivityType['action'], string> = {
   added: 'Checked in',
   consumed: 'Used',
@@ -53,8 +55,8 @@ export default function Activity({ state, notify }: PageProps) {
     notify('Activity exported');
   }
   return (
-    <div className="page-enter">
-      <div className="page-heading">
+    <div className="activity-page page-enter">
+      <div className="page-heading household-playful-heading activity-heading">
         <div>
           <div className="eyebrow date-eyebrow">THE LITTLE EVERYDAY THINGS</div>
           <h1>
@@ -66,6 +68,12 @@ export default function Activity({ state, notify }: PageProps) {
           <Download size={16} />
           Export activity
         </button>
+        <div className="household-heading-friends" aria-hidden="true">
+          <span className="household-friend-orbit" />
+          <span className="household-friend first">🥕</span>
+          <span className="household-friend second">🍋</span>
+          <span className="household-friend-note">little moments, remembered.</span>
+        </div>
       </div>
       <div className="activity-summary">
         <div className="card">
@@ -157,25 +165,39 @@ export default function Activity({ state, notify }: PageProps) {
             <tbody>
               {filtered.map((a) => (
                 <tr key={a.id}>
-                  <td>
+                  <td data-label="Grocery item">
                     <div className="activity-item">
                       <span>{a.emoji}</span>
                       {a.productName}
                     </div>
                   </td>
-                  <td>
+                  <td data-label="What happened">
                     <span
                       className={`badge ${a.action === 'consumed' ? 'green' : a.action === 'discarded' ? 'red' : a.action === 'adjusted' ? 'amber' : 'neutral'}`}
                     >
                       {descriptions[a.action]}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Quantity">
                     {formatQuantity(a.quantity)} {a.unit}
                   </td>
-                  <td>{a.locationName}</td>
-                  <td>{a.memberName}</td>
-                  <td>
+                  <td data-label="Location">{a.locationName || '—'}</td>
+                  <td data-label="Who">
+                    <span className="activity-person">
+                      <MemberAvatar
+                        member={
+                          state.members.find((member) => member.name === a.memberName) || {
+                            id: 'history',
+                            name: a.memberName,
+                            color: '#956c81',
+                          }
+                        }
+                        size="sm"
+                      />
+                      <strong>{a.memberName}</strong>
+                    </span>
+                  </td>
+                  <td data-label="When">
                     <span className="activity-time">
                       {new Date(a.createdAt).toLocaleDateString('en-GB', {
                         timeZone: 'Europe/Berlin',

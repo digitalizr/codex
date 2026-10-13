@@ -1,0 +1,662 @@
+.app-shell .sidebar {
+  background: #fcf8ed;
+  border-color: #e9e0cd;
+  padding-top: 28px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.app-shell .brand {
+  text-align: left;
+  gap: 10px;
+}
+.app-shell .brand-mark {
+  position: relative;
+  width: 42px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f4dcc3;
+  color: #ad7a54;
+}
+.app-shell .brand-mark > svg {
+  width: 29px;
+  height: 29px;
+}
+.app-shell .brand-heart {
+  position: absolute;
+  left: 17px;
+  bottom: 9px;
+  font-size: 11px;
+  line-height: 1;
+  background: #f4dcc3;
+  color: #ba8461;
+}
+.app-shell .brand-word {
+  color: #594934;
+  font-size: 30px;
+  letter-spacing: -1.4px;
+}
+.app-shell .brand-tagline {
+  font-size: 9px;
+  color: #ae9d82;
+  letter-spacing: 0.3px;
+}
+.app-shell .sidebar-divider {
+  background: #e8dec9;
+  margin: 26px 10px 23px;
+}
+.app-shell .sidebar-label {
+  color: #b3a186;
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  margin-bottom: 15px;
+}
+.app-shell .side-nav {
+  gap: 7px;
+}
+.app-shell .nav-link {
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  padding: 8px 10px;
+  font-size: 11px;
+  gap: 10px;
+  color: #8b846e;
+}
+.app-shell .nav-link:hover {
+  background: #f4eedf;
+  color: #726549;
+}
+.app-shell .nav-link.active {
+  background: #f3e7d2;
+  color: #806345;
+  border-color: #e8d8b9;
+  box-shadow: 0 2px 0 #eee0c8;
+}
+.app-shell .nav-icon-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 31px;
+  width: 31px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #e9dfca;
+  color: #a78e65;
+}
+.app-shell .nav-link[data-page='overview'] .nav-icon-bubble {
+  background: #f4e5b0;
+  color: #a28c47;
+}
+.app-shell .nav-link[data-page='inventory'] .nav-icon-bubble {
+  background: #dfe9bb;
+  color: #7a9053;
+}
+.app-shell .nav-link[data-page='shopping'] .nav-icon-bubble {
+  background: #f2d5bd;
+  color: #b6906c;
+}
+.app-shell .nav-link[data-page='planner'] .nav-icon-bubble {
+  background: #e2d6ea;
+  color: #a38cb6;
+}
+.app-shell .nav-link[data-page='activity'] .nav-icon-bubble {
+  background: #d3e7e5;
+  color: #87aaa2;
+}
+.app-shell .nav-count {
+  background: #ede4cc;
+  color: #a39576;
+  min-width: 18px;
+  height: 18px;
+  font-size: 9px;
+}
+.app-shell .sidebar-note {
+  position: relative;
+  background: #e9ebd1;
+  border: 1px solid #e0e3c5;
+  border-radius: 18px;
+  padding: 18px 16px;
+  color: #a5b386;
+}
+.app-shell .sidebar-note > svg {
+  color: #94a56c;
+}
+.app-shell .sidebar-note h4 {
+  font-size: 12px;
+  color: #849363;
+  margin-bottom: 7px;
+}
+.app-shell .sidebar-note p {
+  color: #a4ae88;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.app-shell .sidebar-note button {
+  min-height: 38px;
+  font-size: 10px;
+  color: #859666;
+  margin-top: 6px;
+}
+.app-shell .sidebar-note-sparkle {
+  position: absolute;
+  right: 20px;
+  top: 12px;
+  color: #b0bd8e;
+  font-size: 31px;
+  transform: rotate(11deg);
+}
+.app-shell .household-profile {
+  border-color: #e8dec9;
+  gap: 8px;
+  padding-top: 16px;
+}
+.app-shell .household-profile strong {
+  color: #857654;
+  font-size: 11px;
+}
+.app-shell .household-profile small {
+  color: #a6977a;
+  font-size: 10px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.sidebar-person-portrait {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 41px;
+  height: 45px;
+}
+.app-shell .sidebar-person-portrait .member-avatar,
+.app-shell .profile-mini-portrait .member-avatar,
+.app-shell .presence-portrait .member-avatar,
+.app-shell .presence-choice-portrait .member-avatar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+}
+.app-shell .topbar {
+  min-height: 77px;
+  height: auto;
+  background: #fffdf5;
+  border-color: #ece5d6;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.app-shell .breadcrumbs {
+  color: #a49b85;
+  font-size: 11px;
+}
+.app-shell .breadcrumbs span:last-child {
+  color: #887a5b;
+}
+.app-shell .breadcrumbs svg {
+  color: #c6bda6;
+}
+.app-shell .topbar-right {
+  gap: 15px;
+}
+.app-shell .global-search {
+  height: 42px;
+  width: 220px;
+  border-radius: 11px;
+  background: #f9f6ea;
+  border-color: #ece5d3;
+  color: #b6ab8c;
+}
+.app-shell .global-search input {
+  font-size: 11px;
+  color: #968568;
+}
+.app-shell .global-search input::placeholder {
+  color: #b8ac91;
+}
+.app-shell .global-search kbd {
+  background: #fcfbf4;
+  color: #bdaf94;
+  border-color: #e9e1cc;
+}
+.app-shell .top-divider {
+  background: #ede4cf;
+}
+.app-shell .profile-mini-switch {
+  gap: 6px;
+  min-height: 52px;
+  border: 1px solid #e7dfc9;
+  background: #f8f3e3;
+  border-radius: 13px;
+  padding: 0 4px 0 6px;
+}
+.profile-mini-portrait {
+  display: inline-flex;
+  height: 44px;
+  width: 38px;
+  flex-shrink: 0;
+}
+.profile-mini-copy {
+  position: relative;
+}
+.profile-mini-copy label {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  pointer-events: none;
+  color: #b3a184;
+  text-transform: uppercase;
+  font-size: 7px;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+.app-shell .profile-mini-copy select {
+  height: 52px;
+  min-height: 52px;
+  max-width: 160px;
+  min-width: 90px;
+  margin: 0;
+  padding: 18px 7px 4px;
+  background: transparent;
+  border: 0;
+  color: #8b7754;
+  font-size: 13px;
+  font-weight: 600;
+  outline: 0;
+}
+.app-shell .profile-mini-copy select:focus-visible {
+  outline: 2px solid #568b72;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.household-presence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 1424px;
+  margin: 20px 38px 0;
+  padding: 18px 23px;
+  border: 1px solid #e2e5cc;
+  border-radius: 20px;
+  background: #f1f3e2;
+  box-shadow: 0 3px 0 #e9edda;
+  position: relative;
+}
+.presence-person {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-width: 0;
+  flex: 1;
+}
+.presence-portrait {
+  display: inline-flex;
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 78px;
+  transform: rotate(-3deg);
+}
+.presence-avatar-heart {
+  position: absolute;
+  right: -8px;
+  top: 0;
+  display: grid;
+  place-items: center;
+  height: 22px;
+  width: 22px;
+  font-size: 18px;
+  color: #c19d82;
+  transform: rotate(15deg);
+}
+.presence-copy {
+  min-width: 0;
+  max-width: 100%;
+}
+.presence-kicker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #a1ad83;
+  font-size: 7px;
+  letter-spacing: 1.3px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+.presence-copy h2 {
+  color: #6a7953;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.presence-copy h2 > span {
+  color: #819168;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+}
+.presence-copy h2 strong {
+  color: var(--profile-color, #718a5b);
+  font-weight: 750;
+}
+.presence-copy p {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8c9979;
+  line-height: 1.7;
+}
+.presence-switcher {
+  min-width: 0;
+  max-width: 100%;
+}
+.presence-switcher-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a4ad8d;
+  font-size: 9px;
+  margin: 0 0 8px 3px;
+}
+.presence-profile-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.presence-profile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 53px;
+  min-width: 111px;
+  max-width: 240px;
+  border: 1px solid #e2e6ce;
+  border-radius: 13px;
+  padding: 5px 12px 5px 8px;
+  background: #fffdf5;
+  color: #7f866a;
+  font-size: 12px;
+  text-align: left;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.presence-profile-button:hover {
+  border-color: var(--member-color);
+  box-shadow: 0 2px 0 #e5e9d0;
+}
+.presence-profile-button.selected {
+  background: #fffdf4;
+  border-color: var(--member-color);
+  color: var(--member-color);
+  box-shadow: 0 3px 0 #dce4c9;
+  font-weight: 600;
+}
+.presence-choice-portrait {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 34px;
+  height: 38px;
+}
+.presence-choice-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.presence-choice-check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--member-color);
+  color: #fffdf0;
+  margin-left: 2px;
+}
+.presence-trip-note {
+  color: #899a73;
+  font-size: 11px;
+  margin: 9px 2px 0;
+  line-height: 1.6;
+}
+.app-shell .content-area {
+  padding-top: 27px;
+}
+@media (min-width: 1600px) {
+  .household-presence {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 1150px) {
+  .household-presence {
+    margin: 18px 25px 0;
+    padding: 17px 19px;
+  }
+  .presence-person {
+    min-width: 260px;
+  }
+  .presence-copy h2 {
+    font-size: 22px;
+  }
+  .presence-portrait {
+    width: 64px;
+    height: 71px;
+  }
+  .presence-profile-button {
+    min-width: 100px;
+  }
+  .app-shell .global-search {
+    width: 190px;
+  }
+}
+@media (max-width: 920px) {
+  .app-shell .sidebar {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+  .app-shell .nav-link {
+    gap: 7px;
+    padding: 8px 6px;
+    font-size: 10px;
+  }
+  .app-shell .nav-icon-bubble {
+    width: 27px;
+    height: 28px;
+  }
+  .app-shell .sidebar-note {
+    padding: 16px 12px;
+  }
+  .household-presence {
+    margin: 17px 20px 0;
+    gap: 14px;
+  }
+  .presence-person {
+    min-width: 230px;
+  }
+  .presence-copy h2 {
+    font-size: 21px;
+  }
+  .presence-copy h2 > span {
+    font-size: 15px;
+  }
+  .presence-copy p {
+    font-size: 10px;
+  }
+  .presence-switcher-label {
+    font-size: 8px;
+  }
+  .presence-profile-button {
+    min-width: 94px;
+    font-size: 11px;
+    padding-right: 9px;
+    gap: 6px;
+  }
+  .presence-choice-portrait {
+    height: 32px;
+    width: 29px;
+  }
+  .app-shell .global-search {
+    width: 160px;
+  }
+}
+@media (max-width: 650px) {
+  .app-shell .sidebar {
+    padding: 27px 19px 21px;
+  }
+  .app-shell .sidebar-label {
+    font-size: 9px;
+  }
+  .app-shell .nav-link {
+    gap: 10px;
+    font-size: 12px;
+    padding: 9px 10px;
+    min-height: 49px;
+  }
+  .app-shell .nav-icon-bubble {
+    width: 32px;
+    height: 32px;
+  }
+  .app-shell .sidebar-note {
+    padding: 18px 16px;
+  }
+  .app-shell .sidebar-note p {
+    font-size: 11px;
+  }
+  .app-shell .sidebar-note button {
+    min-height: 44px;
+    font-size: 11px;
+  }
+  .app-shell .household-profile {
+    min-height: 64px;
+  }
+  .app-shell .household-profile strong,
+  .app-shell .household-profile small {
+    font-size: 11px;
+  }
+  .app-shell .topbar {
+    min-height: 76px;
+    padding: 9px 15px;
+    gap: 8px;
+  }
+  .app-shell .mobile-menu-button {
+    min-width: 44px;
+    min-height: 44px;
+    background: #f4ecd9;
+    border: 1px solid #e9dfc5;
+    border-radius: 11px;
+    color: #a39168;
+  }
+  .app-shell .breadcrumbs {
+    min-width: 0;
+    gap: 0;
+    font-size: 11px;
+  }
+  .app-shell .breadcrumbs > span:first-of-type,
+  .app-shell .breadcrumbs > svg {
+    display: none;
+  }
+  .app-shell .breadcrumbs > span:last-child {
+    overflow-wrap: anywhere;
+  }
+  .app-shell .topbar-right {
+    gap: 0;
+  }
+  .app-shell .profile-mini-switch {
+    min-height: 52px;
+    padding: 0 3px 0 5px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .profile-mini-portrait {
+    width: 30px;
+    height: 38px;
+  }
+  .app-shell .profile-mini-copy select {
+    max-width: 110px;
+    min-width: 83px;
+    font-size: 13px;
+  }
+  .profile-mini-copy label {
+    font-size: 7px;
+  }
+  .household-presence {
+    margin: 15px 17px 0;
+    padding: 16px;
+    gap: 12px;
+    border-radius: 17px;
+  }
+  .presence-person {
+    flex-basis: 100%;
+    min-width: 0;
+    gap: 13px;
+  }
+  .presence-portrait {
+    width: 57px;
+    height: 63px;
+  }
+  .presence-kicker {
+    font-size: 6px;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .presence-copy h2 {
+    font-size: 22px;
+    letter-spacing: -0.55px;
+  }
+  .presence-copy h2 > span {
+    font-size: 16px;
+  }
+  .presence-copy p {
+    font-size: 11px;
+    margin-top: 3px;
+  }
+  .presence-switcher {
+    width: 100%;
+  }
+  .presence-switcher-label {
+    display: none;
+  }
+  .presence-profile-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .presence-profile-button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .presence-profile-button {
+    flex: 1;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 48px;
+    font-size: 12px;
+    padding: 5px 9px;
+    gap: 7px;
+  }
+  .presence-choice-portrait {
+    width: 31px;
+    height: 35px;
+  }
+  .presence-choice-check {
+    height: 17px;
+    width: 17px;
+    margin-left: 0;
+  }
+  .presence-trip-note {
+    font-size: 11px;
+    line-height: 1.65;
+    margin: 10px 0 0;
+  }
+  .app-shell .content-area {
+    padding-top: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .presence-profile-button {
+    transition: none;
+  }
+}

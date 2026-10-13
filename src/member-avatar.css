@@ -1,0 +1,19 @@
+.member-avatar {
+  display: block;
+  width: 56px;
+  height: 62px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+.member-avatar.member-avatar-sm {
+  width: 32px;
+  height: 35px;
+}
+.member-avatar.member-avatar-md {
+  width: 56px;
+  height: 62px;
+}
+.member-avatar.member-avatar-lg {
+  width: 80px;
+  height: 88px;
+}

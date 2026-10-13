@@ -1,0 +1,570 @@
+.activity-page,
+.settings-page {
+  color: #544b3d;
+}
+.activity-page .household-playful-heading,
+.settings-page .household-playful-heading {
+  position: relative;
+  isolation: isolate;
+  align-items: flex-start;
+  padding: 30px;
+  min-height: 205px;
+  overflow: hidden;
+  border-radius: 23px;
+  margin-bottom: 23px;
+  background: #e2e5d1;
+  border: 1px solid #d1d7b8;
+}
+.settings-page .household-playful-heading {
+  background: #ecdbd3;
+  border-color: #dec4b8;
+}
+.activity-page .household-playful-heading > div:first-child,
+.settings-page .household-playful-heading > div:first-child {
+  position: relative;
+  z-index: 1;
+  max-width: 70%;
+}
+.activity-page .household-playful-heading h1,
+.settings-page .household-playful-heading h1 {
+  color: #5d6644;
+  font-size: clamp(28px, 3vw, 37px);
+  letter-spacing: -1.5px;
+  line-height: 1.25;
+  margin-top: 13px;
+}
+.settings-page .household-playful-heading h1 {
+  color: #785b4c;
+}
+.activity-page .household-playful-heading .eyebrow,
+.settings-page .household-playful-heading .eyebrow {
+  color: #7d8660;
+  font-size: 10px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+}
+.settings-page .household-playful-heading .eyebrow {
+  color: #9a7a67;
+}
+.activity-page .household-playful-heading p,
+.settings-page .household-playful-heading p {
+  font-size: 12px;
+  color: #626d4d;
+  line-height: 1.8;
+  margin-top: 10px;
+  max-width: 440px;
+}
+.settings-page .household-playful-heading p {
+  color: #77594a;
+}
+.activity-page .household-playful-heading > .btn {
+  position: relative;
+  z-index: 2;
+  background: #fff9e6;
+  border-color: #c3c9a6;
+  color: #727a50;
+  min-height: 44px;
+  font-size: 12px;
+  padding: 11px 15px;
+  margin-top: 0;
+}
+.activity-page .household-heading-friends,
+.settings-page .household-heading-friends {
+  position: absolute;
+  width: 221px;
+  height: 148px;
+  right: 31px;
+  bottom: 3px;
+  pointer-events: none;
+}
+.activity-page .household-friend-orbit,
+.settings-page .household-friend-orbit {
+  position: absolute;
+  bottom: 19px;
+  left: 5px;
+  width: 202px;
+  height: 92px;
+  background: #b1bd9133;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+}
+.settings-page .household-friend-orbit {
+  background: #c9a59035;
+}
+.activity-page .household-friend,
+.settings-page .household-friend {
+  position: absolute;
+  filter: drop-shadow(0 7px 3px #7a68481a);
+}
+.activity-page .household-friend.first {
+  top: 11px;
+  left: 25px;
+  font-size: 81px;
+  transform: rotate(-19deg);
+}
+.activity-page .household-friend.second {
+  top: 46px;
+  right: 6px;
+  font-size: 67px;
+  transform: rotate(13deg);
+}
+.settings-page .household-friend.first {
+  top: 2px;
+  left: 13px;
+  font-size: 93px;
+  transform: rotate(-8deg);
+}
+.settings-page .household-friend.second {
+  top: 29px;
+  right: 4px;
+  font-size: 70px;
+  transform: rotate(10deg);
+}
+.activity-page .household-friend-note,
+.settings-page .household-friend-note {
+  position: absolute;
+  bottom: 11px;
+  left: 9px;
+  width: 204px;
+  font-size: 10px;
+  text-align: center;
+  color: #87936b;
+  transform: rotate(-5deg);
+}
+.settings-page .household-friend-note {
+  color: #ae8870;
+}
+.activity-page .card,
+.settings-page .card {
+  border: 1px solid #e5dfcf;
+  border-radius: 20px;
+  background: #fffaf0;
+  box-shadow: 0 4px 0 #e9e0cb33;
+}
+.activity-page .activity-summary {
+  gap: 13px;
+}
+.activity-page .activity-summary .card {
+  background: #eef0dd;
+  padding: 23px;
+  border-color: #dfe3c9;
+  gap: 15px;
+}
+.activity-page .activity-summary .card:nth-child(2) {
+  background: #f5dfce;
+  border-color: #ebd4be;
+}
+.activity-page .activity-summary .card:nth-child(3) {
+  background: #eee3d4;
+  border-color: #e1d4c2;
+}
+.activity-page .activity-summary .icon-tile {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: #929769;
+  background: #fffaec80;
+}
+.activity-page .activity-summary strong {
+  color: #6e6048;
+  font-size: 29px;
+}
+.activity-page .activity-summary small {
+  color: #776349;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.activity-page .activity-controls {
+  padding: 14px;
+  border: 1px solid #e6dfcf;
+  background: #f4f0e3;
+  border-radius: 16px;
+  gap: 9px;
+}
+.activity-page .search-box,
+.activity-page .filter-select {
+  min-height: 44px;
+  background: #fffdf6;
+  border-radius: 11px;
+  border-color: #ddd9c6;
+  color: #776b53;
+  font-size: 12px;
+}
+.activity-page .search-box input {
+  color: #6c654b;
+  font-size: 12px;
+}
+.activity-page .search-box input::placeholder {
+  color: #80745f;
+}
+.activity-page .activity-count {
+  font-size: 11px;
+  color: #7a684d;
+}
+.activity-page .activity-table th {
+  background: #f1eddd;
+  color: #7b674b;
+  font-size: 10px;
+  padding: 16px;
+}
+.activity-page .activity-table td {
+  border-color: #eee6d6;
+  color: #7c674b;
+  font-size: 12px;
+  padding: 18px 16px;
+}
+.activity-page .activity-item {
+  color: #746044;
+  font-weight: 650;
+  max-width: 230px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.activity-page .activity-item > span {
+  width: 41px;
+  height: 43px;
+  background: #f0e8d2;
+  border-radius: 12px;
+  font-size: 27px;
+  flex-shrink: 0;
+}
+.activity-page .badge {
+  font-size: 10px;
+  border-radius: 7px;
+  padding: 5px 8px;
+}
+.activity-page .activity-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.activity-page .activity-person strong {
+  font-size: 12px;
+  font-weight: 650;
+  color: #7b624c;
+}
+.activity-page .activity-time,
+.activity-page .activity-footnote {
+  font-size: 11px;
+  color: #7c684f;
+  line-height: 1.8;
+}
+.settings-page .settings-tabs {
+  margin-bottom: 22px;
+  padding-bottom: 5px;
+  border-bottom: 0;
+  gap: 9px;
+}
+.settings-page .settings-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 17px;
+  border: 1px solid #e3deca;
+  border-radius: 12px;
+  color: #7b674d;
+  background: #fffbef;
+  font-size: 12px;
+}
+.settings-page .settings-tabs button > span {
+  font-size: 19px;
+}
+.settings-page .settings-tabs button.active {
+  background: #778451;
+  border-color: #778451;
+  color: #fff9e2;
+  box-shadow: 0 3px 0 #66704420;
+}
+.settings-page .settings-card {
+  padding: 27px;
+}
+.settings-page .settings-household-card {
+  background: #fff4de;
+  border-color: #e9dcbe;
+}
+.settings-page .settings-people-card {
+  background: #f1ebe8;
+  border-color: #e2d5ce;
+}
+.settings-page .settings-card > h2 {
+  font-size: 20px;
+  color: #746045;
+}
+.settings-page .settings-card > p {
+  font-size: 12px;
+  color: #7e684b;
+}
+.settings-page .settings-card .btn {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.settings-page .settings-row {
+  gap: 12px;
+  border-color: #e9e0d0;
+  min-height: 73px;
+}
+.settings-page .settings-row-icon {
+  width: 44px;
+  height: 46px;
+  border-radius: 14px;
+  background: #f0e9cd;
+  font-size: 27px;
+}
+.settings-page .settings-row-icon.member {
+  width: 56px;
+  height: 62px;
+  border-radius: 0;
+  background: transparent;
+}
+.settings-page .settings-row-copy strong {
+  color: #78624b;
+  font-size: 14px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.settings-page .settings-row-copy small {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #7e694f;
+  overflow-wrap: anywhere;
+}
+.settings-page .settings-row .icon-btn {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  color: #7e684b;
+  background: #f2ebdb;
+  border-radius: 12px;
+}
+.settings-page .settings-profile-list {
+  gap: 11px;
+}
+.settings-page .settings-profile-list .settings-row {
+  padding: 14px;
+  border: 1px solid #e0d2c7;
+  background: #faf5ec;
+  border-radius: 16px;
+  gap: 10px;
+}
+.settings-page .settings-profile-list .settings-row.settings-active-profile {
+  background: #fbf7e6;
+  border-color: #c6b99b;
+  box-shadow: inset 4px 0 #a4aa71;
+}
+.settings-page .settings-active-profile .badge {
+  margin: 5px 0 0 !important;
+  display: table;
+  font-size: 10px;
+  color: #62723f;
+  background: #e7ebcf;
+}
+.settings-page .settings-note {
+  background: #f2efdf;
+  border: 1px solid #e7e1cd;
+  border-radius: 13px;
+  padding: 17px;
+}
+.settings-page .settings-note p {
+  font-size: 11px;
+  color: #78674c;
+  line-height: 1.85;
+}
+.settings-page .settings-note svg {
+  color: #a5a374;
+}
+.settings-page .settings-data-stats span {
+  font-size: 11px;
+  background: #eeeccf;
+  color: #736b44;
+  border-radius: 10px;
+}
+.settings-page .settings-card.danger {
+  background: #f8e9e0;
+  border-color: #e8cdc1;
+}
+.settings-page .settings-card.danger p {
+  color: #806450;
+}
+.settings-page .settings-empty {
+  font-size: 12px;
+  color: #7e674a;
+}
+@media (max-width: 1100px) {
+  .activity-page .activity-table-card {
+    overflow-x: auto;
+  }
+  .activity-page .activity-table {
+    min-width: 720px;
+  }
+  .settings-page .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-page .settings-card.wide {
+    grid-column: auto;
+  }
+}
+@media (max-width: 650px) {
+  .activity-page .household-playful-heading,
+  .settings-page .household-playful-heading {
+    min-height: 282px;
+    padding: 23px 21px;
+  }
+  .activity-page .household-playful-heading {
+    min-height: 334px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .activity-page .household-playful-heading > div:first-child,
+  .settings-page .household-playful-heading > div:first-child {
+    max-width: 100%;
+  }
+  .activity-page .household-playful-heading h1,
+  .settings-page .household-playful-heading h1 {
+    font-size: 30px;
+    max-width: 280px;
+  }
+  .activity-page .household-playful-heading p,
+  .settings-page .household-playful-heading p {
+    font-size: 11px;
+    max-width: 230px;
+  }
+  .activity-page .household-heading-friends,
+  .settings-page .household-heading-friends {
+    width: 174px;
+    height: 114px;
+    right: 9px;
+    bottom: 7px;
+    transform: scale(0.85);
+    transform-origin: bottom right;
+  }
+  .activity-page .household-friend-note,
+  .settings-page .household-friend-note {
+    display: none;
+  }
+  .activity-page .household-playful-heading > .btn {
+    margin: 4px 0 0;
+    min-height: 44px;
+    font-size: 11px;
+  }
+  .activity-page .activity-summary {
+    gap: 9px;
+  }
+  .activity-page .activity-summary .card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 12px;
+    gap: 13px;
+    border-radius: 15px;
+  }
+  .activity-page .activity-summary .icon-tile {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+  .activity-page .activity-summary strong {
+    font-size: 26px;
+  }
+  .activity-page .activity-summary small {
+    font-size: 11px;
+    margin-top: 7px;
+  }
+  .activity-page .activity-controls {
+    padding: 12px;
+  }
+  .activity-page .activity-controls .filter-select {
+    width: 100%;
+    flex: auto;
+  }
+  .activity-page .activity-table-card {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .activity-page .activity-table {
+    min-width: 0;
+    display: block;
+  }
+  .activity-page .activity-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .activity-page .activity-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+  .activity-page .activity-table tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    background: #fffaf0;
+    border: 1px solid #e7dfcc;
+    border-radius: 17px;
+    padding: 17px;
+    gap: 11px 15px;
+  }
+  .activity-page .activity-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .activity-page .activity-table td:first-child {
+    grid-column: 1 / -1;
+    padding-bottom: 11px;
+    border-bottom: 1px solid #eee5d0;
+  }
+  .activity-page .activity-table td:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    color: #7f694e;
+    margin-bottom: 6px;
+  }
+  .activity-page .activity-item {
+    max-width: none;
+    font-size: 14px;
+  }
+  .settings-page .settings-card {
+    padding: 21px;
+  }
+  .settings-page .settings-tabs button {
+    font-size: 11px;
+    padding: 10px 13px;
+    gap: 7px;
+  }
+  .settings-page .settings-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+    gap: 7px;
+  }
+  .settings-page .settings-profile-list .settings-row {
+    grid-template-columns: 56px minmax(0, 1fr) 44px;
+    padding: 13px;
+    gap: 8px;
+  }
+  .settings-page .settings-profile-list .settings-row > button:last-child {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .settings-page .settings-profile-list .settings-row > .settings-row-icon,
+  .settings-page .settings-profile-list .settings-row > .settings-row-copy {
+    grid-row: 1 / 3;
+  }
+  .settings-page .settings-row-copy strong {
+    font-size: 13px;
+  }
+}

@@ -18,8 +18,10 @@ import {
   Users,
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import MemberAvatar from '../components/MemberAvatar';
 import { api, today } from '../api';
 import type { Category, Location, Member, PageProps, Provider } from '../types';
+import '../household-playful.css';
 
 type Tab = 'household' | 'locations' | 'categories' | 'providers' | 'data';
 type Registry = 'members' | 'locations' | 'categories' | 'providers';
@@ -36,16 +38,6 @@ const details = {
 function errorText(error: unknown) {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 }
-function initials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
-
 export default function Settings({ state, refresh, notify, memberId }: PageProps) {
   const [tab, setTab] = useState<Tab>('household');
   const [householdName, setHouseholdName] = useState(state.household.name);
@@ -107,7 +99,7 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
 
   function registryRows(registry: Registry) {
     return (
-      <div className="settings-list">
+      <div className={`settings-list ${registry === 'members' ? 'settings-profile-list' : ''}`}>
         {state[registry].length ? (
           state[registry].map((entry) => {
             const inUse =
@@ -136,19 +128,20 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
                       : `${inUse} upcoming ${inUse === 1 ? 'trip' : 'trips'}`;
             const isActiveMember = registry === 'members' && entry.id === memberId;
             return (
-              <div className="settings-row" key={entry.id}>
+              <div
+                className={`settings-row ${isActiveMember ? 'settings-active-profile' : ''}`}
+                key={entry.id}
+              >
                 <span
                   className={`settings-row-icon ${registry === 'members' ? 'member' : ''}`}
                   style={
-                    'color' in entry && registry === 'members'
-                      ? { backgroundColor: entry.color }
-                      : 'color' in entry && registry === 'providers'
-                        ? { color: entry.color, backgroundColor: `${entry.color}15` }
-                        : undefined
+                    'color' in entry && registry === 'providers'
+                      ? { color: entry.color, backgroundColor: `${entry.color}15` }
+                      : undefined
                   }
                 >
                   {registry === 'members' ? (
-                    initials(entry.name)
+                    <MemberAvatar member={entry as Member} />
                   ) : 'emoji' in entry ? (
                     entry.emoji
                   ) : (
@@ -160,7 +153,7 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
                     {entry.name}
                     {isActiveMember && (
                       <span className="badge green" style={{ marginLeft: 8 }}>
-                        You
+                        Using now
                       </span>
                     )}
                   </strong>
@@ -199,19 +192,26 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
     );
   }
 
-  const tabs: { id: Tab; name: string }[] = [
-    { id: 'household', name: 'Household' },
-    { id: 'locations', name: 'Locations' },
-    { id: 'categories', name: 'Categories' },
-    { id: 'providers', name: 'Stores' },
-    { id: 'data', name: 'Data' },
+  const tabs: { id: Tab; name: string; emoji: string }[] = [
+    { id: 'household', name: 'Household', emoji: '🏡' },
+    { id: 'locations', name: 'Locations', emoji: '🧺' },
+    { id: 'categories', name: 'Categories', emoji: '🌈' },
+    { id: 'providers', name: 'Stores', emoji: '🛍️' },
+    { id: 'data', name: 'Data', emoji: '💌' },
   ];
   return (
     <div className="settings-page">
-      <div className="page-heading">
+      <div className="page-heading household-playful-heading settings-heading">
         <div>
+          <div className="eyebrow date-eyebrow">THE PEOPLE & PLACES THAT MAKE IT HOME</div>
           <h1>A home that works for you</h1>
           <p>Your places, your people, your everyday preferences.</p>
+        </div>
+        <div className="household-heading-friends" aria-hidden="true">
+          <span className="household-friend-orbit" />
+          <span className="household-friend first">🏡</span>
+          <span className="household-friend second">🌷</span>
+          <span className="household-friend-note">made for your kind of home.</span>
         </div>
       </div>
       <nav className="settings-tabs" aria-label="Settings sections">
@@ -222,13 +222,14 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
             aria-current={tab === item.id ? 'page' : undefined}
             onClick={() => setTab(item.id)}
           >
+            <span aria-hidden="true">{item.emoji}</span>
             {item.name}
           </button>
         ))}
       </nav>
       {tab === 'household' && (
         <div className="settings-grid">
-          <section className="card settings-card">
+          <section className="card settings-card settings-household-card">
             <h2>Your household</h2>
             <p>A shared space for keeping the kitchen in order.</p>
             <form onSubmit={saveHousehold} style={{ marginTop: 22 }}>
@@ -269,7 +270,7 @@ export default function Settings({ state, refresh, notify, memberId }: PageProps
               </p>
             </div>
           </section>
-          <section className="card settings-card">
+          <section className="card settings-card settings-people-card">
             <h2>Better together</h2>
             <p>Start with yourself. Add your partner whenever you're ready.</p>
             {registryRows('members')}

@@ -12,14 +12,110 @@ import {
   ShoppingBasket,
   Sparkles,
   Store,
+  UsersRound,
   Trash2,
   UserRound,
   X,
 } from 'lucide-react';
 import { api, formatQuantity, prettyDate } from '../api';
 import Modal from '../components/Modal';
-import type { HouseholdState, PageProps, ShoppingItem, ShoppingList, Suggestion } from '../types';
+import MemberAvatar from '../components/MemberAvatar';
+import type {
+  HouseholdState,
+  PageProps,
+  ShoppingItem,
+  ShoppingList,
+  Suggestion,
+  Member,
+} from '../types';
 import '../shopping.css';
+import '../shopping-playful.css';
+
+type ShopperScope = 'all' | 'mine' | 'unassigned' | `member:${string}`;
+const shoppingPalettes = ['leaf', 'peach', 'butter', 'berry', 'sky', 'coffee'];
+function shoppingPalette(value: string) {
+  return shoppingPalettes[
+    [...value].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % shoppingPalettes.length
+  ];
+}
+function ShopperAvatar({ member }: { member?: Member }) {
+  return member ? (
+    <MemberAvatar member={member} size="sm" className="shopping-shopper-portrait" />
+  ) : (
+    <span className="shopping-shopper-avatar unassigned" aria-hidden="true">
+      <UserRound size={17} />
+    </span>
+  );
+}
+function BasketBuddy() {
+  return (
+    <div className="shopping-basket-buddy" aria-hidden="true">
+      <svg viewBox="0 0 260 185" fill="none">
+        <ellipse cx="131" cy="163" rx="87" ry="12" fill="#d5b16a" fillOpacity=".28" />
+        <path
+          d="M66 111c-26-14-31 8-13 20M201 112c25-11 30 11 11 20"
+          stroke="#ad8550"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M97 148l-8 17M168 148l8 17"
+          stroke="#986e43"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M77 81C77 45 179 43 184 80"
+          stroke="#a47a4d"
+          strokeWidth="11"
+          strokeLinecap="round"
+        />
+        <path d="M94 86c-16-25-8-41 5-34 7-28 27-14 14 12 16-16 29-6 10 20" fill="#95b466" />
+        <path d="M119 96l11-56c2-11 17-9 17 3l-1 53" fill="#f4a268" />
+        <path
+          d="M136 41c-7-21 2-27 8-12 5-19 16-15 8 3"
+          stroke="#82a35c"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        <path d="M157 80c-2-19 3-35 18-35s23 12 24 35" fill="#f8df9d" />
+        <path d="M169 52l8 10M182 51l8 10" stroke="#d9b877" strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M56 87h151l-14 58c-2 10-12 17-25 17H93c-13 0-23-7-25-17L56 87Z"
+          fill="#edc580"
+          stroke="#c99b5c"
+          strokeWidth="3"
+        />
+        <path
+          d="M52 87c0-6 4-10 10-10h140c6 0 10 4 10 10s-4 10-10 10H62c-6 0-10-4-10-10Z"
+          fill="#f6d89e"
+          stroke="#c99b5c"
+          strokeWidth="3"
+        />
+        <path
+          d="M80 103l8 44M98 103l5 47M165 103l-5 47M183 103l-8 44"
+          stroke="#dcb374"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <circle cx="113" cy="120" r="4" fill="#654a32" />
+        <circle cx="149" cy="120" r="4" fill="#654a32" />
+        <path d="M122 128c5 7 13 7 18 0" stroke="#654a32" strokeWidth="3.5" strokeLinecap="round" />
+        <ellipse cx="102" cy="130" rx="9" ry="5" fill="#e9a478" />
+        <ellipse cx="159" cy="130" rx="9" ry="5" fill="#e9a478" />
+        <path
+          d="M35 44v12M29 50h12M223 60v10M218 65h10"
+          stroke="#c4a46b"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="221" cy="140" r="3" fill="#bdad83" />
+        <path d="m41 139 4 4 4-4" stroke="#afac7b" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      <span>good things, coming home.</span>
+    </div>
+  );
+}
 
 interface CreateListProps {
   state: HouseholdState;
@@ -787,6 +883,7 @@ function SuggestionsModal({
 
 export default function Shopping({ state, refresh, notify, memberId }: PageProps) {
   const [mode, setMode] = useState<'active' | 'completed'>('active');
+  const [shopperScope, setShopperScope] = useState<ShopperScope>('all');
   const [selectedId, setSelectedId] = useState('');
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
   const [suggestionBatch, setSuggestionBatch] = useState<Suggestion[] | null>(null);
@@ -799,7 +896,30 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
   const [checkedOverrides, setCheckedOverrides] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const isChecked = (item: ShoppingItem) => checkedOverrides[item.id] ?? item.checked;
-  const lists = state.lists
+  const viewer = state.members.find((member) => member.id === memberId);
+  const shopperPalette = (id: string | null | undefined) => {
+    const index = state.members.findIndex((member) => member.id === id);
+    return index < 0 ? 'coffee' : ['leaf', 'berry', 'sky', 'peach', 'butter', 'coffee'][index % 6];
+  };
+  const selectedShopper = shopperScope.startsWith('member:')
+    ? state.members.find((member) => member.id === shopperScope.slice(7))
+    : undefined;
+  const scope = shopperScope.startsWith('member:') && !selectedShopper ? 'all' : shopperScope;
+  const matchesShopper = (trip: ShoppingList) =>
+    scope === 'all' ||
+    (scope === 'mine'
+      ? trip.memberId === memberId
+      : scope === 'unassigned'
+        ? !trip.memberId
+        : trip.memberId === selectedShopper?.id);
+  const scopedTrips = state.lists.filter(matchesShopper);
+  const scopeName =
+    scope === 'all'
+      ? 'All household'
+      : scope === 'unassigned'
+        ? 'Unassigned'
+        : `${scope === 'mine' ? viewer?.name || 'Your profile' : selectedShopper?.name}’s trips`;
+  const lists = scopedTrips
     .filter((l) => (mode === 'completed' ? l.status === 'completed' : l.status !== 'completed'))
     .sort(
       (a, b) =>
@@ -846,12 +966,14 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
   async function selectedCreated(id: string) {
     await refresh();
     setSelectedId(id);
+    setShopperScope('all');
     setMode('active');
     notify('Shopping trip created');
   }
   async function suggestionsAdded(id: string) {
     await refresh();
     setSelectedId(id);
+    setShopperScope('all');
     setMode('active');
     setSelectedSuggestions(new Set());
     notify('Essentials added to your shopping list');
@@ -883,19 +1005,109 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
       );
     } else setSuggestionBatch([s]);
   }
-  const pending = state.lists.filter((l) => l.status !== 'completed');
+  const pending = scopedTrips.filter((l) => l.status !== 'completed');
   return (
     <div className="shopping-page">
-      <div className="page-heading">
+      <div className="page-heading shopping-playful-heading">
         <div>
-          <span className="page-eyebrow">A LITTLE PLANNING GOES A LONG WAY</span>
-          <h1>Shopping lists</h1>
-          <p>From running low to ready to go. Make every trip count.</p>
+          <span className="page-eyebrow">
+            <Sparkles size={15} /> OUR NEXT LITTLE FOOD ADVENTURE
+          </span>
+          <h1>
+            Shopping lists
+            <span className="shopping-heading-heart" aria-hidden="true">
+              ♡
+            </span>
+          </h1>
+          <p>Little lists. Lovely meals. Let’s bring the good stuff home.</p>
+          <span className="shopping-heading-note">
+            <UsersRound size={15} /> One shared pantry, a little teamwork.
+          </span>
         </div>
         <button className="btn btn-primary" onClick={() => setDialog('create')}>
           <Plus size={18} /> New shopping trip
         </button>
+        <BasketBuddy />
       </div>
+      <section className="shopping-scope-panel" aria-label="Whose shopping trips are displayed">
+        <div className="shopping-scope-heading">
+          <div>
+            <h2>Whose little shopping adventure?</h2>
+            <p>Choose a shopper, or see everyone’s plans together.</p>
+          </div>
+          <div className="shopping-viewer-identity">
+            <ShopperAvatar member={viewer} />
+            <span>
+              Viewing as<strong>{viewer?.name || 'Your profile'}</strong>
+            </span>
+          </div>
+        </div>
+        <div
+          className="shopping-scope-controls"
+          role="group"
+          aria-label="Filter shopping trips by shopper"
+        >
+          <button
+            className={scope === 'all' ? 'selected' : ''}
+            aria-pressed={scope === 'all'}
+            onClick={() => setShopperScope('all')}
+          >
+            <UsersRound size={17} />
+            All household
+          </button>
+          <button
+            className={scope === 'mine' ? 'selected' : ''}
+            aria-label="Mine"
+            aria-pressed={scope === 'mine'}
+            onClick={() => setShopperScope('mine')}
+          >
+            <UserRound size={17} />
+            Mine<span>{viewer?.name}</span>
+          </button>
+          <button
+            className={scope === 'unassigned' ? 'selected' : ''}
+            aria-pressed={scope === 'unassigned'}
+            onClick={() => setShopperScope('unassigned')}
+          >
+            <ShoppingBasket size={17} />
+            Unassigned
+          </button>
+          <label
+            className={`shopping-shopper-select ${scope.startsWith('member:') ? 'selected' : ''}`}
+          >
+            <UserRound size={17} />
+            <select
+              aria-label="Filter trips by shopper"
+              value={scope.startsWith('member:') ? scope.slice(7) : ''}
+              onChange={(event) =>
+                setShopperScope(event.target.value ? `member:${event.target.value}` : 'all')
+              }
+            >
+              <option value="">Choose a shopper</option>
+              {state.members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="shopping-scope-summary" role="status">
+          <span className="shopping-scope-dot" />
+          Showing{' '}
+          <strong>
+            {scope === 'all'
+              ? 'all household trips'
+              : scope === 'unassigned'
+                ? 'unassigned trips'
+                : scopeName}
+          </strong>
+          <span className="shopping-scope-result-count">
+            {lists.length} {mode === 'completed' ? 'completed' : 'upcoming'}{' '}
+            {lists.length === 1 ? 'trip' : 'trips'}
+          </span>
+        </p>
+      </section>
       {error && (
         <p className="error-message" role="alert">
           {error}
@@ -907,15 +1119,20 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
       <div className="shopping-layout">
         <aside className="card trip-sidebar">
           <div className="trip-sidebar-heading">
-            <h2>Your trips</h2>
-            <span className="shopping-count">{state.lists.length}</span>
+            <h2>{scope === 'all' ? 'Household trips' : scopeName}</h2>
+            <span className="shopping-count">{lists.length}</span>
           </div>
           <div className="shopping-segmented">
-            <button className={mode === 'active' ? 'active' : ''} onClick={() => setMode('active')}>
+            <button
+              className={mode === 'active' ? 'active' : ''}
+              aria-pressed={mode === 'active'}
+              onClick={() => setMode('active')}
+            >
               Upcoming <span>{pending.length}</span>
             </button>
             <button
               className={mode === 'completed' ? 'active' : ''}
+              aria-pressed={mode === 'completed'}
               onClick={() => setMode('completed')}
             >
               Completed
@@ -927,8 +1144,10 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
                 <ShoppingBasket size={28} />
                 <p>
                   {mode === 'completed'
-                    ? 'Your finished trips will appear here.'
-                    : 'A well-stocked home starts with a list.'}
+                    ? 'No completed trips in this view yet.'
+                    : scope !== 'all'
+                      ? 'No upcoming trips for this shopper yet.'
+                      : 'A happy pantry starts with a little list.'}
                 </p>
                 {mode === 'active' && (
                   <button
@@ -942,9 +1161,11 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
             ) : (
               lists.map((l) => {
                 const count = l.items.filter((i) => i.checked).length;
+                const shopper = state.members.find((member) => member.id === l.memberId);
                 return (
                   <button
-                    className={`trip-option ${list?.id === l.id ? 'selected' : ''}`}
+                    className={`trip-option shopping-palette-${shopperPalette(l.memberId)} ${list?.id === l.id ? 'selected' : ''}`}
+                    aria-pressed={list?.id === l.id}
                     key={l.id}
                     onClick={() => setSelectedId(l.id)}
                   >
@@ -965,6 +1186,13 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
                       <span>·</span>
                       {l.items.length} items
                     </span>
+                    <span className="trip-option-shopper">
+                      <ShopperAvatar member={shopper} />
+                      <span>
+                        <small>Trip shopper</small>
+                        <strong>{shopper?.name || 'Unassigned'}</strong>
+                      </span>
+                    </span>
                     {l.status === 'shopping' && (
                       <span className="badge amber trip-option-status">Shopping now</span>
                     )}
@@ -983,7 +1211,9 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
             <p>Keep one trip per shopping day. Split your items by store inside.</p>
           </div>
         </aside>
-        <section className="card shopping-detail">
+        <section
+          className={`card shopping-detail shopping-palette-${shopperPalette(list?.memberId)}`}
+        >
           {list ? (
             <>
               <header className="shopping-list-header">
@@ -1004,8 +1234,7 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
                       {prettyDate(list.date)}
                     </span>
                     <span>
-                      <UserRound size={14} />
-                      {assignee?.name || 'Unassigned'}
+                      {total} {total === 1 ? 'little essential' : 'little essentials'}
                     </span>
                   </div>
                 </div>
@@ -1033,6 +1262,20 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
                   </button>
                 </div>
               </header>
+              <div className="shopping-trip-shopper" aria-label="Trip shopper">
+                <ShopperAvatar member={assignee} />
+                <div>
+                  <span>Trip shopper</span>
+                  <strong>{assignee?.name || 'Unassigned'}</strong>
+                </div>
+                <p>
+                  {assignee
+                    ? assignee.id === memberId
+                      ? 'This trip is yours. Happy shopping!'
+                      : `On ${assignee.name}’s list. Shared with your household.`
+                    : 'A little adventure waiting for a volunteer.'}
+                </p>
+              </div>
               {list.notes && <p className="shopping-trip-note">{list.notes}</p>}
               {!completed && !list.memberId && (
                 <div className="trip-claim">
@@ -1043,8 +1286,12 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
                     onClick={() =>
                       void run(
                         'assign',
-                        () => api(`/lists/${list.id}`, { method: 'PATCH', body: { memberId } }),
-                        'Trip assigned to you',
+                        async () => {
+                          await api(`/lists/${list.id}`, { method: 'PATCH', body: { memberId } });
+                          setShopperScope('mine');
+                          setSelectedId(list.id);
+                        },
+                        `Trip assigned to ${viewer?.name || 'you'}`,
                       )
                     }
                   >
@@ -1054,7 +1301,9 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
               )}
               <div className="shopping-progress">
                 <div>
-                  <span>{completed ? 'Received at home' : 'Your shopping progress'}</span>
+                  <span>
+                    {completed ? 'Safely home in the pantry' : 'A little closer to a full basket'}
+                  </span>
                   <strong>
                     {checked}
                     <span> / {total} items</span>
@@ -1075,15 +1324,12 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
               )}
               <div className="shopping-groups">
                 {providerGroups.map((group) => (
-                  <section className="shopping-provider" key={group.id || 'any'}>
+                  <section
+                    className={`shopping-provider shopping-palette-${shoppingPalette(group.id || 'any')}`}
+                    key={group.id || 'any'}
+                  >
                     <header>
-                      <span
-                        className="store-symbol"
-                        style={{
-                          background: group.provider ? `${group.provider.color}16` : undefined,
-                          color: group.provider?.color,
-                        }}
-                      >
+                      <span className="store-symbol">
                         <Store size={17} />
                       </span>
                       <h3>{group.provider?.name || 'Any store'}</h3>
@@ -1182,9 +1428,16 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
               </h2>
               <p>
                 {mode === 'completed'
-                  ? 'Complete a shopping trip to keep a record of what came home.'
-                  : 'Create a trip, add what you need, and check things off as you go.'}
+                  ? 'No completed trips for this view. The lovely things you bring home will appear here.'
+                  : scope !== 'all'
+                    ? 'No upcoming trips for this shopper. Try the household view or plan a new little adventure.'
+                    : 'Create a trip, add what you need, and check things off as you go.'}
               </p>
+              {scope !== 'all' && (
+                <button className="btn btn-secondary" onClick={() => setShopperScope('all')}>
+                  <UsersRound size={17} /> See all household trips
+                </button>
+              )}
               {mode === 'active' && (
                 <button className="btn btn-primary" onClick={() => setDialog('create')}>
                   <Plus size={17} /> Create shopping trip
@@ -1200,8 +1453,8 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
             <div className="suggestion-eyebrow">
               <Sparkles size={16} /> A LITTLE HELP FROM YOUR PANTRY
             </div>
-            <h2>Time to stock up</h2>
-            <p>Suggestions based on the minimum stock levels you’ve set.</p>
+            <h2>A little pantry wish list</h2>
+            <p>Shared essentials that could use a top-up. Pick what comes home next.</p>
           </div>
           {state.suggestions.length > 0 && (
             <button
@@ -1220,11 +1473,20 @@ export default function Shopping({ state, refresh, notify, memberId }: PageProps
             </button>
           )}
         </div>
+        {state.suggestions.length > 0 && list && !completed && (
+          <p className="shopping-suggestion-target">
+            <ShoppingBasket size={15} />
+            <span>
+              Quick add goes to <strong>{list.name}</strong>
+              <small>Trip shopper: {assignee?.name || 'Unassigned'}</small>
+            </span>
+          </p>
+        )}
         {state.suggestions.length > 0 ? (
           <div className="suggestion-grid">
             {state.suggestions.map((s) => (
               <div
-                className={`suggestion-tile ${selectedSuggestions.has(s.productId) ? 'selected' : ''}`}
+                className={`suggestion-tile shopping-palette-${shoppingPalette(s.categoryId)} ${selectedSuggestions.has(s.productId) ? 'selected' : ''}`}
                 key={s.productId}
               >
                 <label className="shopping-checkbox">

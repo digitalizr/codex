@@ -1,0 +1,728 @@
+/* A friendly calendar, scoped so its drag controls do not change the other pages. */
+.planner-playful {
+  color: #3e4233;
+  --planner-ink: #3f513a;
+  --planner-muted: #767668;
+}
+.planner-playful .planner-playful-heading {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 218px;
+  padding: 30px 32px;
+  margin: 0 0 24px;
+  border: 1px solid #cbd6b4;
+  border-radius: 26px;
+  background: #e0e9c9;
+  align-items: flex-start;
+}
+.planner-playful-heading::before {
+  position: absolute;
+  content: '';
+  width: 250px;
+  height: 250px;
+  border: 1px solid #acbc8d66;
+  border-radius: 50%;
+  right: 15px;
+  top: 15px;
+  box-shadow:
+    0 0 0 28px #cbd8b540,
+    0 0 0 56px #cbd8b540;
+  z-index: -1;
+}
+.planner-playful .planner-playful-heading > div:first-child {
+  max-width: 64%;
+  z-index: 1;
+}
+.planner-playful .planner-playful-heading h1 {
+  color: #40523b;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  margin: 14px 0 10px;
+}
+.planner-playful .planner-playful-heading p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #677450;
+  max-width: 460px;
+}
+.planner-playful-heading .page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6a7c51;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.planner-playful .planner-playful-heading > .btn {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  margin-top: 0;
+  border-color: #486041;
+  background: #486041;
+  box-shadow: 0 3px 0 #a5b48d;
+}
+.planner-person-present {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 17px;
+  font-size: 12px;
+  color: #4f5c43;
+}
+.planner-person-present > .member-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 33px;
+  height: 36px;
+}
+.planner-person-present > small {
+  font-size: 10px;
+  color: #6f795d;
+  border-left: 1px solid #b7c29f;
+  padding-left: 9px;
+}
+.planner-calendar-friend {
+  position: absolute;
+  right: 75px;
+  bottom: 18px;
+  width: 150px;
+  height: 125px;
+  pointer-events: none;
+  text-align: center;
+  transform: rotate(5deg);
+}
+.planner-calendar-friend > span {
+  display: block;
+  font-size: 80px;
+  filter: drop-shadow(0 6px 0 #a5b18b33);
+}
+.planner-calendar-friend > i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #524637;
+  top: 66px;
+  left: 63px;
+  box-shadow:
+    21px 0 0 #524637,
+    -9px 7px 0 2px #e8a38c99,
+    30px 7px 0 2px #e8a38c99;
+}
+.planner-calendar-friend > b {
+  display: inline-block;
+  font-size: 10px;
+  background: #fff9e6;
+  color: #77815d;
+  border: 1px solid #cbd0aa;
+  border-radius: 12px;
+  padding: 6px 11px;
+  transform: rotate(-5deg);
+}
+.planner-playful .planner-summary {
+  gap: 16px;
+  margin-bottom: 25px;
+}
+.planner-playful .planner-summary-card {
+  padding: 20px 23px !important;
+  border: 1px solid #e4decf;
+  border-radius: 20px;
+  box-shadow: 0 4px 0 #eee8dc;
+  background: #fffdf7;
+}
+.planner-playful .planner-summary-icon {
+  width: 49px;
+  height: 49px;
+  border-radius: 17px;
+  transform: rotate(-5deg);
+}
+.planner-playful .planner-summary-icon.peach {
+  background: #f9ddcb;
+  color: #ac7050;
+}
+.planner-playful .planner-summary-icon.sage {
+  background: #e2e9cf;
+  color: #768859;
+}
+.planner-playful .planner-summary-icon.sand {
+  background: #faedc8;
+  color: #a48442;
+}
+.planner-playful .planner-summary-card strong {
+  color: #46553d;
+  font-size: 28px;
+}
+.planner-playful .planner-summary-card p {
+  color: #807b6c;
+  font-size: 11px;
+}
+.planner-playful .planner-calendar {
+  background: #fffdf6;
+  border: 1px solid #e0dccb;
+  border-radius: 23px;
+  box-shadow: 0 5px 0 #ece6d8;
+}
+.planner-playful .planner-calendar-toolbar {
+  padding: 25px 25px 17px;
+}
+.planner-playful .planner-calendar-toolbar h2 {
+  font-size: 19px;
+  color: #4c573f;
+  letter-spacing: -0.5px;
+}
+.planner-playful .planner-calendar-toolbar p {
+  color: #847e6c;
+  font-size: 11px;
+}
+.planner-playful .planner-calendar-navigation {
+  gap: 12px;
+}
+.planner-playful .planner-calendar-navigation > div {
+  border-radius: 13px;
+  background: #fff9eb;
+  border-color: #e8e0ca;
+  padding: 2px;
+}
+.planner-playful .planner-calendar-navigation .icon-btn {
+  width: 37px;
+  height: 36px;
+  border-radius: 11px;
+  color: #72785c;
+}
+.planner-playful .planner-calendar-navigation .btn {
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 13px;
+  border-color: #e7dfc8;
+  background: #fff9ec;
+  color: #74694d;
+}
+.planner-drag-hint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 24px 17px;
+  color: #797960;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.planner-drag-hint svg {
+  flex-shrink: 0;
+  color: #9b956e;
+}
+.planner-drag-hint.active {
+  color: #536d3c;
+  font-weight: 650;
+}
+.planner-playful .calendar-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c8cbb1 #f4f0e3;
+}
+.planner-playful .planner-week-grid {
+  grid-template-columns: repeat(7, minmax(140px, 1fr));
+  min-width: 980px;
+  min-height: 390px;
+  border-top: 1px solid #e6e1d2;
+  border-bottom: 1px solid #e6e1d2;
+}
+.planner-playful .planner-day {
+  position: relative;
+  min-height: 360px;
+  padding: 17px 9px 13px;
+  border-right: 1px solid #e7e2d3;
+  background: #fffdf5;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+.planner-playful .planner-day:nth-child(even) {
+  background: #fcf8ed;
+}
+.planner-playful .planner-day.is-today {
+  background: #f0f4de;
+}
+.planner-playful .planner-day-header {
+  gap: 8px;
+  min-height: 90px;
+}
+.planner-playful .planner-day-header > span {
+  font-size: 10px;
+  font-weight: 750;
+  color: #858367;
+  letter-spacing: 1px;
+}
+.planner-playful .planner-day-header > strong {
+  color: #6a7253;
+  font-size: 23px;
+  width: 39px;
+  height: 39px;
+  background: #f3eddf;
+  border-radius: 14px;
+}
+.planner-playful .is-today .planner-day-header > strong {
+  color: #fffdf2;
+  background: #64794b;
+  box-shadow: 0 3px 0 #c5d0ab;
+  transform: rotate(-5deg);
+}
+.planner-playful .planner-day-header small {
+  color: #788850;
+  font-size: 10px;
+}
+.planner-playful .calendar-trip {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #d9dfba;
+  border-left-width: 1px;
+  border-radius: 17px;
+  box-shadow: 0 3px 0 #d4ddbd;
+  background: #eaf0d6;
+  color: #485d3a;
+  cursor: default;
+}
+.planner-playful .calendar-trip:hover {
+  transform: none;
+  box-shadow: 0 4px 0 #cbd5b3;
+}
+.calendar-trip-open {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  padding: 13px 11px 11px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.calendar-trip-open:disabled {
+  cursor: wait;
+}
+.planner-playful .calendar-trip strong {
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 750;
+  color: #485c3c;
+}
+.planner-playful .calendar-trip-symbol {
+  font-size: 25px;
+  line-height: 1.25;
+  padding-bottom: 1px;
+}
+.planner-playful .calendar-trip-count {
+  color: #788163;
+  font-size: 11px;
+}
+.planner-playful .calendar-trip-assignee {
+  color: #59684c;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 6px;
+}
+.planner-playful .calendar-trip-assignee > .planner-shopper-avatar,
+.planner-playful .calendar-trip-assignee > .planner-unassigned-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 33px;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 750;
+  color: #34392b;
+}
+.planner-playful .calendar-trip-assignee > .planner-shopper-name {
+  display: inline;
+  width: auto;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.planner-playful .calendar-trip-assignee small {
+  font-size: 10px;
+  color: #76845f;
+  white-space: nowrap;
+}
+.planner-playful .calendar-trip.shopping {
+  background: #fde8cd;
+  border-color: #ebcea6;
+  box-shadow: 0 3px 0 #ecd5b5;
+}
+.planner-playful .calendar-trip.shopping strong {
+  color: #7b573c;
+}
+.planner-playful .calendar-trip.shopping .calendar-trip-assignee,
+.planner-playful .calendar-trip.shopping .calendar-trip-count,
+.planner-playful .calendar-trip.shopping small {
+  color: #8c6d4c;
+}
+.planner-playful .calendar-trip.completed {
+  background: #e9e4f1;
+  border-color: #d8cfdf;
+  box-shadow: 0 3px 0 #ddd5e5;
+  opacity: 1;
+}
+.planner-playful .calendar-trip.completed strong,
+.planner-playful .calendar-trip.completed .calendar-trip-assignee,
+.planner-playful .calendar-trip.completed .calendar-trip-count,
+.planner-playful .calendar-trip.completed small {
+  color: #82718f;
+}
+.planner-playful .calendar-trip .planner-trip-status {
+  font-size: 10px;
+  margin-top: 1px;
+}
+.calendar-trip-actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-top: 1px dashed #ccd6b4;
+  background: #ffffff38;
+}
+.planner-drag-handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-height: 39px;
+  border: 0;
+  background: transparent;
+  color: #7d8765;
+  padding: 6px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.planner-drag-handle:active {
+  cursor: grabbing;
+}
+.planner-drag-handle:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+.planner-move-date {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #657752;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 11px 3px;
+  cursor: pointer;
+  min-height: 39px;
+}
+.planner-move-date:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.planner-playful .calendar-add-trip {
+  min-height: 37px;
+  margin-top: 18px;
+  font-size: 11px;
+  color: #898b6c;
+  border: 1px dashed #d9d6be;
+  border-radius: 13px;
+}
+.planner-playful .calendar-add-trip:hover {
+  background: #f0eddd;
+  color: #62774a;
+}
+.planner-playful .planner-day.is-drop-target,
+.planner-playful .planner-unscheduled.is-drop-target {
+  background: #e0ecc6;
+  box-shadow: inset 0 0 0 2px #879c5e;
+}
+.planner-drop-label {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 5px;
+  border-radius: 12px;
+  border: 1px dashed #93a968;
+  color: #627a42;
+  font-size: 11px;
+  text-align: center;
+  background: #f0f6e2;
+}
+.planner-playful .calendar-trip.is-trip-source {
+  opacity: 0.45;
+}
+.planner-playful.is-dragging-trip {
+  cursor: grabbing;
+  user-select: none;
+}
+.planner-drag-preview {
+  position: fixed;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 205px;
+  padding: 13px;
+  border: 1px solid #c9d6a5;
+  border-radius: 18px;
+  background: #f3f8df;
+  box-shadow:
+    0 6px 0 #bfd0a860,
+    0 12px 32px #4f633126;
+  pointer-events: none;
+  transform: rotate(-3deg);
+}
+.planner-drag-preview > span {
+  font-size: 30px;
+}
+.planner-drag-preview > div {
+  min-width: 0;
+}
+.planner-drag-preview strong {
+  display: block;
+  font-size: 12px;
+  color: #4e6138;
+  overflow-wrap: anywhere;
+}
+.planner-drag-preview small {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  color: #879469;
+}
+.planner-playful .calendar-legend {
+  font-size: 10px;
+  color: #87816b;
+  padding: 18px 23px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.planner-playful .calendar-legend-tip {
+  color: #9a947d;
+  font-size: 10px;
+}
+.planner-playful .planner-next-trips,
+.planner-playful .planner-unscheduled {
+  background: #fffdf7;
+  border: 1px solid #e3dccb;
+  border-radius: 22px;
+  box-shadow: 0 4px 0 #eee7da;
+}
+.planner-playful .planner-unscheduled {
+  background: #fffcf1;
+}
+.planner-playful .planner-section-heading h2 {
+  font-size: 19px;
+  color: #5a6248;
+  letter-spacing: -0.4px;
+}
+.planner-playful .planner-section-heading p,
+.planner-playful .planner-empty p,
+.planner-playful .planner-empty small {
+  color: #91856c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.planner-playful .planner-date-block {
+  background: #efeecf;
+  border: 1px solid #e1dfbd;
+  border-radius: 15px;
+  color: #7d8051;
+}
+.planner-playful .planner-date-block.overdue {
+  background: #f6ddcf;
+  border-color: #e9c7b3;
+  color: #a1765a;
+}
+.planner-playful .planner-next-trip-description > button {
+  color: #4f5b3e;
+  font-size: 13px;
+  font-weight: 700;
+}
+.planner-playful .planner-next-trip-description p,
+.planner-playful .planner-next-trip-description > div {
+  font-size: 11px;
+  color: #969077;
+}
+.planner-playful .planner-next-trip .btn {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.planner-playful .unscheduled-trip {
+  flex-wrap: wrap;
+  gap: 11px;
+  padding: 18px 0;
+}
+.planner-playful .unscheduled-trip .unscheduled-icon {
+  background: #f8ebc7;
+  border: 1px solid #ecdcb3;
+  border-radius: 15px;
+  color: #b19757;
+  width: 42px;
+  height: 42px;
+}
+.planner-playful .unscheduled-trip > div {
+  min-width: 80px;
+}
+.planner-playful .unscheduled-trip strong {
+  color: #6c674e;
+  font-size: 13px;
+}
+.planner-playful .unscheduled-trip p {
+  color: #998a66;
+  font-size: 11px;
+}
+.planner-playful .unscheduled-trip .btn {
+  font-size: 11px;
+}
+@media (max-width: 1150px) {
+  .planner-calendar-friend {
+    right: 48px;
+    width: 130px;
+    transform: scale(0.9) rotate(5deg);
+    transform-origin: bottom right;
+  }
+  .planner-playful .planner-summary-card {
+    padding: 18px 17px !important;
+    gap: 13px;
+  }
+}
+@media (max-width: 700px) {
+  .planner-playful .planner-playful-heading {
+    padding: 24px 22px;
+    min-height: 270px;
+    gap: 20px;
+  }
+  .planner-playful .planner-playful-heading > div:first-child {
+    max-width: 100%;
+  }
+  .planner-playful .planner-playful-heading h1 {
+    font-size: 33px;
+    max-width: 260px;
+  }
+  .planner-playful .planner-playful-heading p {
+    max-width: 280px;
+  }
+  .planner-playful .planner-playful-heading > .btn {
+    align-self: flex-start;
+    width: auto;
+    font-size: 12px;
+  }
+  .planner-calendar-friend {
+    bottom: 13px;
+    right: 12px;
+    width: 110px;
+    transform: scale(0.72) rotate(5deg);
+  }
+  .planner-person-present {
+    max-width: 240px;
+    gap: 7px;
+  }
+  .planner-person-present > small {
+    display: block;
+    width: 100%;
+    padding-left: 37px;
+    border-left: 0;
+  }
+  .planner-playful .planner-summary {
+    gap: 9px;
+    margin-bottom: 23px;
+  }
+  .planner-playful .planner-summary-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 15px 8px !important;
+    gap: 9px;
+    border-radius: 17px;
+    text-align: center;
+  }
+  .planner-playful .planner-summary-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+  .planner-playful .planner-summary-card strong {
+    font-size: 24px;
+  }
+  .planner-playful .planner-summary-card p {
+    font-size: 10px;
+    line-height: 1.5;
+    margin-top: 5px;
+  }
+  .planner-playful .planner-calendar-toolbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 21px 19px 15px;
+    gap: 16px;
+  }
+  .planner-playful .planner-calendar-toolbar h2 {
+    font-size: 17px;
+  }
+  .planner-playful .planner-calendar-navigation {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .planner-playful .planner-calendar-navigation .icon-btn {
+    width: 40px;
+    height: 39px;
+  }
+  .planner-drag-hint {
+    margin: 0 19px 17px;
+    font-size: 11px;
+    align-items: flex-start;
+  }
+  .planner-playful .planner-week-grid {
+    grid-template-columns: repeat(7, 156px);
+    min-width: 1092px;
+    min-height: 380px;
+  }
+  .planner-playful .planner-day {
+    padding: 17px 10px 14px;
+  }
+  .planner-drag-handle,
+  .planner-move-date {
+    min-height: 44px;
+  }
+  .planner-playful .calendar-legend {
+    padding: 17px 18px;
+    font-size: 10px;
+  }
+  .planner-playful .planner-bottom-grid {
+    gap: 22px;
+  }
+  .planner-playful .planner-next-trips,
+  .planner-playful .planner-unscheduled {
+    padding: 23px 20px 13px !important;
+  }
+  .planner-playful .planner-next-trip {
+    gap: 11px;
+  }
+  .planner-playful .planner-next-trip-description > button {
+    font-size: 12px;
+  }
+  .planner-playful .planner-next-trip .btn {
+    font-size: 10px;
+    padding: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planner-playful .planner-day,
+  .planner-playful .calendar-trip {
+    transition: none;
+  }
+}

@@ -79,6 +79,7 @@ export function createStore(
     `);
       seed(store);
     });
+  store.transaction(() => migrateDefaultProfiles(store));
   store.state = () => readState(store);
   store.export = () => readState(store, true);
   store.addActivity = (product, action, quantity, member, location) =>
@@ -105,9 +106,46 @@ function dateAfter(days) {
   return date.toISOString().slice(0, 10);
 }
 
+function migrateDefaultProfiles(s) {
+  // This additive marker is ignored by earlier schema-1 releases. Run once so
+  // later profile edits and deliberate deletions are respected on every restart.
+  s.db.exec(`CREATE TABLE IF NOT EXISTS app_migrations (
+    name TEXT PRIMARY KEY, applied_at TEXT NOT NULL
+  )`);
+  const migration = 'personalized-household-profiles-v1';
+  if (s.get('SELECT name FROM app_migrations WHERE name=?', migration)) return;
+  const hadPartner = s.get(
+    'SELECT id FROM members WHERE name=? COLLATE NOCASE OR name=? COLLATE NOCASE',
+    'Wife',
+    'Sunita',
+  );
+  // Keep all member IDs, assignments, inventory and recorded activity names.
+  // Exact placeholder names may change; customized names and target conflicts do not.
+  s.run(
+    `UPDATE members SET name=? WHERE id=? AND name=? COLLATE BINARY
+     AND NOT EXISTS (SELECT 1 FROM members WHERE name=? COLLATE NOCASE)`,
+    'Mohan',
+    'member-you',
+    'You',
+    'Mohan',
+  );
+  s.run(
+    `UPDATE members SET name=? WHERE name=? COLLATE BINARY
+     AND NOT EXISTS (SELECT 1 FROM members WHERE name=? COLLATE NOCASE)`,
+    'Sunita',
+    'Wife',
+    'Sunita',
+  );
+  if (!hadPartner && !s.get('SELECT id FROM members WHERE id=?', 'member-wife')) {
+    s.run('INSERT INTO members VALUES (?,?,?)', 'member-wife', 'Sunita', '#B77E94');
+  }
+  s.run('INSERT INTO app_migrations VALUES (?,?)', migration, now());
+}
+
 function seed(s) {
   s.run('INSERT INTO household VALUES (?,?,?)', 'home', 'Our household', 1);
-  s.run('INSERT INTO members VALUES (?,?,?)', 'member-you', 'You', '#568B72');
+  s.run('INSERT INTO members VALUES (?,?,?)', 'member-you', 'Mohan', '#568B72');
+  s.run('INSERT INTO members VALUES (?,?,?)', 'member-wife', 'Sunita', '#B77E94');
   const categories = [
     ['produce', 'Produce', '🥬', '#628B61'],
     ['dairy', 'Dairy & eggs', '🥛', '#D4A457'],
@@ -221,7 +259,7 @@ function seed(s) {
       action,
       quantity,
       unit,
-      'You',
+      'Mohan',
       location,
       new Date(Date.now() - days * 86400000 - 3600000).toISOString(),
     );

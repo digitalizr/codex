@@ -7,7 +7,6 @@ import {
   ShoppingBasket,
   Package,
   Clock3,
-  ListChecks,
   Check,
   Leaf,
   Users,
@@ -17,6 +16,8 @@ import {
 import type { PageProps, Page, InventoryItem } from '../types';
 import { api, daysUntil, formatQuantity, prettyDate, today } from '../api';
 import Modal from '../components/Modal';
+import MemberAvatar from '../components/MemberAvatar';
+import '../home-playful.css';
 
 interface Props extends PageProps {
   navigate: (page: Page) => void;
@@ -118,7 +119,7 @@ export default function Overview({
   };
   return (
     <div className="overview-page page-enter">
-      <div className="page-heading">
+      <div className="page-heading home-heading">
         <div>
           <div className="eyebrow date-eyebrow">
             {new Date().toLocaleDateString('en-GB', {
@@ -133,7 +134,7 @@ export default function Overview({
             {currentMember && currentMember.name !== 'You' ? `, ${currentMember.name}` : ''}
             <span className="greeting-dot">.</span>
           </h1>
-          <p>A well-stocked home, without the guesswork.</p>
+          <p>Your little home. A few good plans. A kitchen full of character.</p>
         </div>
         <button className="btn btn-primary" onClick={onAddItem}>
           <Plus size={18} /> Check in groceries
@@ -152,29 +153,107 @@ export default function Overview({
         <section className="kitchen-hero">
           <div className="hero-content">
             <span className="hero-kicker">
-              <span className="little-dot" /> YOUR KITCHEN, IN SYNC
+              <Sparkles size={13} /> A LITTLE CARE, EVERY DAY
             </span>
             <h2>
-              Good food.
+              A happy little
               <br />
-              Less waste.
-              <br />
-              <span>More home.</span>
+              <span>kitchen.</span>
             </h2>
             <p>
-              Keep track of the little things.
+              Your everyday favourites, all together.
               <br />
-              Make more room for everyday life.
+              Let’s make something good with what’s here.
             </p>
             <button className="hero-link" onClick={() => navigate('inventory')}>
               Take a look inside <ArrowRight size={17} />
             </button>
           </div>
-          <img
-            className="grocery-illustration"
-            src="/grocery-bag.svg"
-            alt="A paper grocery bag filled with fresh vegetables, bread and milk"
-          />
+          <div className="home-hero-friends" aria-hidden="true">
+            <svg viewBox="0 0 270 230" className="home-hero-house">
+              <ellipse cx="135" cy="210" rx="113" ry="13" fill="#a4b287" opacity=".35" />
+              <path
+                d="M61 91 137 31 213 91v112H61Z"
+                fill="#fbefd0"
+                stroke="#cfa678"
+                strokeWidth="4"
+                strokeLinejoin="round"
+              />
+              <path
+                d="m45 93 92-71 92 71"
+                fill="none"
+                stroke="#b98768"
+                strokeWidth="13"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path d="M183 48V30h17v33" fill="#b98768" />
+              <rect
+                x="82"
+                y="110"
+                width="42"
+                height="43"
+                rx="12"
+                fill="#c6d5b9"
+                stroke="#a2b18f"
+                strokeWidth="3"
+              />
+              <path d="M103 112v40m-20-20h40" stroke="#fbefd0" strokeWidth="4" />
+              <path d="M151 202v-60a24 24 0 0 1 48 0v60" fill="#e5b79d" />
+              <circle cx="187" cy="166" r="3" fill="#956f52" />
+              <path d="M128 76c-9-11-23 3-13 12l13 12 13-12c10-9-4-23-13-12" fill="#dca788" />
+              <g transform="rotate(-9 57 176)">
+                <path
+                  d="M29 146c-12-23 4-35 27-35s41 12 28 35v48c0 9-7 15-15 15H45c-9 0-16-6-16-15Z"
+                  fill="#bd8959"
+                  stroke="#a47247"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M36 146c-11-19 1-27 20-27s33 8 21 27v46c0 5-4 9-9 9H45c-5 0-9-4-9-9Z"
+                  fill="#f6d9a3"
+                />
+                <circle cx="47" cy="161" r="3" fill="#785e3b" />
+                <circle cx="68" cy="161" r="3" fill="#785e3b" />
+                <path
+                  d="M50 172q8 9 15 0"
+                  fill="none"
+                  stroke="#785e3b"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <ellipse cx="40" cy="172" rx="5" ry="3" fill="#e4a185" />
+                <ellipse cx="75" cy="172" rx="5" ry="3" fill="#e4a185" />
+              </g>
+              <g transform="rotate(8 218 174)">
+                <path
+                  d="M195 161c9-19 12-47 23-47s15 27 24 47c22 48-13 58-24 58s-45-10-23-58"
+                  fill="#749659"
+                  stroke="#527543"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M201 163c8-17 10-38 17-38s10 21 18 38c15 34-3 48-18 48s-33-14-17-48"
+                  fill="#c8d68c"
+                />
+                <circle cx="218" cy="181" r="16" fill="#ac805b" />
+                <circle cx="207" cy="150" r="2.7" fill="#48633b" />
+                <circle cx="229" cy="150" r="2.7" fill="#48633b" />
+                <path
+                  d="M213 160q5 5 10 0"
+                  fill="none"
+                  stroke="#48633b"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                />
+              </g>
+              <path
+                d="m37 85 2-8 2 8 8 2-8 2-2 8-2-8-8-2Zm198 20 2-7 2 7 7 2-7 2-2 7-2-7-7-2Z"
+                fill="#c49563"
+              />
+            </svg>
+            <span className="home-hero-friend-caption">there’s no place like home.</span>
+          </div>
           <span className="hero-decoration decor-one" />
           <span className="hero-decoration decor-two" />
         </section>
@@ -230,10 +309,13 @@ export default function Overview({
               </div>
               <div className="next-shop-footer">
                 <span>
-                  <span className="avatar-mini">
-                    {state.members.find((m) => m.id === nextTrip.memberId)?.name.slice(0, 1) || '?'}
-                  </span>
-                  {state.members.find((m) => m.id === nextTrip.memberId)?.name || 'Unassigned'}
+                  <MemberAvatar
+                    member={state.members.find((member) => member.id === nextTrip.memberId)}
+                    size="sm"
+                  />
+                  {nextTrip.memberId
+                    ? `Shopping with ${state.members.find((m) => m.id === nextTrip.memberId)?.name || 'a household member'}`
+                    : 'Anyone can take this trip'}
                 </span>
                 <button className="text-link" onClick={() => navigate('shopping')}>
                   Open list <ArrowUpRight size={15} />
@@ -250,7 +332,7 @@ export default function Overview({
       <div className="stat-grid">
         {[
           {
-            icon: Package,
+            emoji: '🧺',
             value: state.inventory.filter((i) => i.quantity > 0).length,
             label: 'Items at home',
             sub: 'A little bit of everything',
@@ -258,15 +340,15 @@ export default function Overview({
             click: () => navigate('inventory'),
           },
           {
-            icon: Clock3,
+            emoji: '🌿',
             value: soon.length,
             label: 'Use soon',
-            sub: soon.length ? 'Good food worth saving' : 'Everything is looking fresh',
+            sub: soon.length ? 'Check those best-before dates' : 'No dates due in the next 3 days',
             color: 'amber',
             click: () => navigate('inventory'),
           },
           {
-            icon: ShoppingBasket,
+            emoji: '🫙',
             value: state.suggestions.length,
             label: 'Running low',
             sub: 'Time for a small restock',
@@ -274,7 +356,7 @@ export default function Overview({
             click: () => navigate('shopping'),
           },
           {
-            icon: ListChecks,
+            emoji: '📝',
             value: activeLists.length,
             label: 'Shopping lists',
             sub: 'Your plans, all in one place',
@@ -283,8 +365,8 @@ export default function Overview({
           },
         ].map((s) => (
           <button key={s.label} className="card stat-card" onClick={s.click}>
-            <span className={`icon-tile ${s.color}`}>
-              <s.icon size={20} />
+            <span className={`icon-tile ${s.color}`} aria-hidden="true">
+              {s.emoji}
             </span>
             <div>
               <span className="stat-value">
@@ -348,7 +430,7 @@ export default function Overview({
                   <div
                     className="home-item-image"
                     style={{
-                      background: `color-mix(in srgb, ${cat?.color || '#869878'} 12%, #fafaf5)`,
+                      background: `color-mix(in srgb, ${cat?.color || '#869878'} 22%, #fff6de)`,
                     }}
                   >
                     <span>{item.emoji}</span>
@@ -506,12 +588,19 @@ export default function Overview({
           <span className="icon-tile green">
             <Users size={20} />
           </span>
-          <h3>Better, together.</h3>
-          <p>
-            A shared list. A stocked kitchen.
-            <br />
-            One less thing to think about.
-          </p>
+          <h3>Your little home team.</h3>
+          <p>A shared kitchen, with a little help from everyone.</p>
+          <div className="home-team-members">
+            {state.members.map((member) => (
+              <span key={member.id} className={member.id === memberId ? 'is-current' : ''}>
+                <MemberAvatar member={member} size="sm" />
+                <span>
+                  {member.name}
+                  {member.id === memberId && <small>Using now</small>}
+                </span>
+              </span>
+            ))}
+          </div>
           <button className="text-link" onClick={() => navigate('settings')}>
             Your household <ArrowRight size={15} />
           </button>

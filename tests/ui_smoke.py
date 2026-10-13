@@ -189,7 +189,7 @@ def run():
                     modal.get_by_label("Who’s shopping?", exact=True).select_option(label="Wife (you)")
                     modal.get_by_label("Notes", exact=True).fill("Visit REWE and the bakery")
                     submit(modal, "Save changes")
-                    expect(page.locator(".list-meta")).to_contain_text("Wife")
+                    expect(page.locator(".shopping-detail").get_by_label("Trip shopper", exact=True)).to_contain_text("Wife")
 
                     page.get_by_role("button", name="Add an item", exact=True).click()
                     modal = dialog(page, "Add to your shopping list")

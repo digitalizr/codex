@@ -60,16 +60,18 @@ There are no API keys, external services, or login accounts to configure. Fonts 
 
 ## Make it your home
 
-The first run creates a clearly labelled sample household. Open **Household settings → Data → Start fresh** to remove sample inventory, shopping trips, and activity while keeping the starting locations, categories, stores, and profile. This action asks for confirmation and is unavailable after the reset.
+The first run creates a clearly labelled sample household with Mohan and Sunita profiles. Open **Household settings → Data → Start fresh** to remove sample inventory, shopping trips, and activity while keeping the starting locations, categories, stores, and profiles. This action asks for confirmation and is unavailable after the reset.
 
 1. **Set up your spaces.** Create locations such as Fridge, Pantry, Freezer, or Utility cupboard. Create your own grocery categories and stores, including REWE and PENNY.
 2. **Check in groceries.** Add an item with its unit, minimum stock level, store preference, quantity, location, and optional best-before date. Later purchases create separate batches, preserving dates and locations.
 3. **Record what changes.** Use an amount when you consume it, or mark it as gone when you discard it. The earliest-dated batch is used first unless you choose a particular location. Correct individual batches in **Edit item & stock**.
 4. **Choose a restock.** Suggestions appear at or below your minimum level and subtract quantities already on active shopping lists. Select the suggestions you actually want to buy.
-5. **Plan a shopping trip.** Schedule a list, assign a household member, and choose a store for each item. The list groups purchases by store. Check items as you buy them.
+5. **Plan a shopping trip.** Schedule a list, assign a household member, and choose a store for each item. The list groups purchases by store. Check items as you buy them. In the weekly planner, drag a trip by its handle onto a new day, or use **Move date**. The shopper and items stay with the trip.
 6. **Bring the shopping home.** Check in purchased items to inventory and complete the trip. Only checked items transfer; unpurchased entries remain clearly marked in the trip history. Received items initially share the location and optional date you choose; edit batches individually afterward.
 
-Add a partner in **Household settings → Household**. The profile selector identifies who records stock movements and lets each person claim a trip. Profiles are names for collaboration, without passwords or identity management. Other open clients refresh shared data every 15 seconds and when they regain focus. Both partners need to reach the same running server to share the database.
+Add a partner in **Household settings → Household**. The prominent **Using as** profile selector identifies who records stock movements and lets each person claim a trip. Shopping trips show their assigned shopper separately; choose **Mine**, a particular person, or **All household** to see the relevant plans. Profiles are names for collaboration, without passwords or identity management. Other open clients refresh shared data every 15 seconds and when they regain focus. Both partners need to reach the same running server to share the database.
+
+For the current local review, follow the [v1.2.0 review checklist](docs/review-v1.2.md).
 
 ## Dedicated database
 

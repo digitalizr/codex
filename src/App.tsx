@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import {
   House,
   LayoutDashboard,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   Heart,
   Copy,
+  Sparkles,
 } from 'lucide-react';
 import { api, setActiveMemberId } from './api';
 import type { HouseholdState, InventoryItem, Page, ReleaseInfo } from './types';
@@ -28,6 +30,8 @@ import Planner from './pages/Planner';
 import Activity from './pages/Activity';
 import Settings from './pages/Settings';
 import { AddItemModal, StockActionModal } from './components/InventoryDialogs';
+import MemberAvatar from './components/MemberAvatar';
+import './shell.css';
 
 const navigation: { id: Page; label: string; icon: typeof House }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -44,6 +48,7 @@ const readPage = (): Page => {
 };
 type Toast = { id: number; message: string; kind: 'success' | 'error' };
 let releaseInfoRequest: Promise<ReleaseInfo> | undefined;
+
 export default function App() {
   const [state, setState] = useState<HouseholdState | null>(null);
   const [page, setPage] = useState<Page>(readPage);
@@ -143,6 +148,11 @@ export default function App() {
     setSearch('');
   };
   const activeMember = state?.members.find((m) => m.id === memberId);
+  const selectMember = (id: string) => {
+    setActiveMemberId(id);
+    localStorage.setItem('hearth-member', id);
+    setMemberId(id);
+  };
   const currentPage = navigation.find((n) => n.id === page)?.label || 'Household settings';
   const sharedProps = state ? { state, refresh, notify, memberId } : null;
   const releaseEnvironment = releaseInfo?.environment === 'production' ? 'Production' : 'Local';
@@ -176,6 +186,9 @@ export default function App() {
         <button className="brand" onClick={() => navigate('overview')} aria-label="Hearth home">
           <span className="brand-mark">
             <House size={36} strokeWidth={1.8} />
+            <span className="brand-heart" aria-hidden="true">
+              ♡
+            </span>
           </span>
           <span>
             <span className="brand-word">
@@ -187,16 +200,19 @@ export default function App() {
           </span>
         </button>
         <div className="sidebar-divider" />
-        <div className="sidebar-label">YOUR EVERYDAY</div>
+        <div className="sidebar-label">YOUR LITTLE CORNER</div>
         <nav className="side-nav" aria-label="Main navigation">
           {navigation.map(({ id, label, icon: Icon }) => (
             <button
               className={`nav-link ${page === id ? 'active' : ''}`}
               key={id}
+              data-page={id}
               onClick={() => navigate(id)}
               aria-current={page === id ? 'page' : undefined}
             >
-              <Icon size={19} />
+              <span className="nav-icon-bubble">
+                <Icon size={19} />
+              </span>
               <span>{label}</span>
               {id === 'shopping' &&
                 !!state?.lists.filter((l) => l.status !== 'completed').length && (
@@ -210,32 +226,37 @@ export default function App() {
         <div className="sidebar-bottom">
           <div className="sidebar-note">
             <Leaf size={20} />
-            <h4>Little habits. Less waste.</h4>
+            <span className="sidebar-note-sparkle" aria-hidden="true">
+              ✧
+            </span>
+            <h4>Little habits. Lovely home.</h4>
             <p>
-              A quick check before you shop
+              A little peek before you shop
               <br />
-              goes a long way.
+              leaves room for good things.
             </p>
             <button onClick={() => navigate('inventory')}>
               See what’s at home <ArrowRight size={12} />
             </button>
           </div>
           <button
-            className={`nav-link ${page === 'settings' ? 'active' : ''}`}
+            className={`nav-link settings-nav ${page === 'settings' ? 'active' : ''}`}
             onClick={() => navigate('settings')}
             aria-current={page === 'settings' ? 'page' : undefined}
           >
-            <SettingsIcon size={18} />
+            <span className="nav-icon-bubble">
+              <SettingsIcon size={18} />
+            </span>
             Household settings
           </button>
           <button className="household-profile" onClick={() => navigate('settings')}>
-            <span className="profile-avatar">{activeMember?.name.slice(0, 1) || 'Y'}</span>
+            <span className="sidebar-person-portrait">
+              <MemberAvatar member={activeMember} size="sm" />
+            </span>
             <span>
               <strong>{state?.household.name || 'My household'}</strong>
               <small>
-                {state?.members.length && state.members.length > 1
-                  ? `${state.members.length} people, one happy home`
-                  : 'Your home, your rhythm'}
+                {activeMember ? `Using as ${activeMember.name}` : 'Your home, your rhythm'}
               </small>
             </span>
             <ChevronsUpDown size={13} />
@@ -269,33 +290,94 @@ export default function App() {
               <kbd>↵</kbd>
             </form>
             <div className="top-divider" />
-            <div className="member-switch">
-              <span
-                className="profile-avatar"
-                style={{
-                  background: activeMember?.color ? `${activeMember.color}22` : undefined,
-                  color: activeMember?.color,
-                }}
-              >
-                {activeMember?.name.slice(0, 1) || 'Y'}
+            <div
+              className="member-switch profile-mini-switch"
+              title={
+                activeMember ? `Using as ${activeMember.name}` : 'Choose your household profile'
+              }
+            >
+              <span className="profile-mini-portrait">
+                <MemberAvatar member={activeMember} size="sm" />
               </span>
-              <select
-                value={memberId}
-                onChange={(e) => {
-                  setMemberId(e.target.value);
-                  setActiveMemberId(e.target.value);
-                }}
-                aria-label="Active household member"
-              >
-                {state?.members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
+              <div className="profile-mini-copy">
+                <label htmlFor="active-household-profile">Using as</label>
+                <select
+                  id="active-household-profile"
+                  value={memberId}
+                  onChange={(e) => selectMember(e.target.value)}
+                  aria-label="Active household member"
+                >
+                  {state?.members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </header>
+        {state && activeMember && (
+          <section
+            className="household-presence"
+            aria-label="Active household profile"
+            style={{ '--profile-color': activeMember.color } as CSSProperties}
+          >
+            <div className="presence-person">
+              <span className="presence-portrait">
+                <MemberAvatar member={activeMember} size="lg" />
+                <span className="presence-avatar-heart" aria-hidden="true">
+                  ♡
+                </span>
+              </span>
+              <div className="presence-copy">
+                <span className="presence-kicker">
+                  <Heart size={11} /> OUR HOME, TOGETHER
+                </span>
+                <h2>
+                  <span>Using as</span> <strong>{activeMember.name}</strong>
+                </h2>
+                <p>Your grocery updates will carry your name.</p>
+              </div>
+            </div>
+            <div className="presence-switcher">
+              <div className="presence-switcher-label">
+                <Sparkles size={12} /> Who’s using Hearth?
+              </div>
+              <div
+                className="presence-profile-options"
+                role="group"
+                aria-label="Choose active household profile"
+              >
+                {state.members.map((member) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    className={`presence-profile-button ${memberId === member.id ? 'selected' : ''}`}
+                    style={{ '--member-color': member.color } as CSSProperties}
+                    aria-label={`Use profile ${member.name}`}
+                    aria-pressed={memberId === member.id}
+                    title={`Use profile ${member.name}`}
+                    onClick={() => selectMember(member.id)}
+                  >
+                    <span className="presence-choice-portrait">
+                      <MemberAvatar member={member} size="sm" />
+                    </span>
+                    <span className="presence-choice-name">{member.name}</span>
+                    {memberId === member.id && (
+                      <span className="presence-choice-check">
+                        <Check size={13} />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="presence-trip-note">
+                Trip assignments stay as planned when you switch.
+              </p>
+            </div>
+          </section>
+        )}
         <div className="content-area">
           {!state ? (
             error ? (
